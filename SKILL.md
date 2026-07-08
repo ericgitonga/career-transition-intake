@@ -31,7 +31,7 @@ Step 2 — Receive the email
            • Headshot (if uploaded)
 
 Step 3 — Download and read
-         Save all attachments into the client's folder (create [ClientName]/ if new).
+         Save all attachments into the client's folder (create Clients/[ClientName]/ if new).
          Read the intake PDF first — it is the authoritative source for all preferences,
          constraints, and context. Then read the CV(s) and JD for factual extraction.
 
@@ -427,14 +427,15 @@ BLACK = "#1A1A1A"   # Body text
 ## Files to keep in the client folder
 
 ```
-[ClientName]/
-├── [Initials]_intake_[date].pdf      ← intake form responses (from submission email)
-├── [original CV files]               ← source material (do not delete)
-├── [JD file]                         ← job description used for gap analysis
-├── [Learning Plan file]              ← client's initial learning plan (if provided)
-├── [Headshot file]                   ← if provided
-├── generate_plan.py                  ← the plan generation script (keep; re-run to update)
-└── [initials]_transition_plan.pdf    ← the deliverable
+Clients/
+└── [ClientName]/
+    ├── [Initials]_intake_[date].pdf      ← intake form responses (from submission email)
+    ├── [original CV files]               ← source material (do not delete)
+    ├── [JD file]                         ← job description used for gap analysis
+    ├── [Learning Plan file]              ← client's initial learning plan (if provided)
+    ├── [Headshot file]                   ← if provided
+    ├── generate_plan.py                  ← the plan generation script (keep; re-run to update)
+    └── [initials]_transition_plan.pdf    ← the deliverable
 ```
 
 The intake PDF is the record of what the client told you. Keep it permanently — it is the

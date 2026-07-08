@@ -1,7 +1,5 @@
 # Client folders — never commit client data
-Eric/
-Eric Test/
-Jackie/
+Clients/
 
 # Gradio runtime
 .gradio/
