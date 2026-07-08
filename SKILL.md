@@ -1,0 +1,463 @@
+# SKILL: Career Transition Plan PDF
+
+Generate a professionally designed, data-rich Career Transition Plan PDF for an individual client
+moving between professional domains. Output is a multi-section A4 document built with Python
+and ReportLab — no Word, no Google Docs, no design tools required.
+
+---
+
+## When to use this skill
+
+- A client has a strong background in one domain and wants to pivot to an adjacent or emerging field
+- You need a polished, shareable document that feels like a consultant deliverable, not a template fill-in
+- The client needs a structured 12–24 month roadmap with concrete milestones, not just advice
+
+---
+
+## Workflow (end-to-end)
+
+```
+Step 1 — Send the intake form
+         Share the link to onboarding_form.py (running locally on port 7860, or hosted).
+         The client fills in all nine sections and uploads their documents.
+
+Step 2 — Receive the email
+         On submission the form emails gitonga@gmail.com with:
+           • [Initials]_intake_[date].pdf  — structured PDF of all form responses
+           • CV / résumé (if uploaded)
+           • LinkedIn export (if uploaded)
+           • Target job description (if uploaded)
+           • Learning plan (if uploaded)
+           • Headshot (if uploaded)
+
+Step 3 — Download and read
+         Save all attachments into the client's folder (create [ClientName]/ if new).
+         Read the intake PDF first — it is the authoritative source for all preferences,
+         constraints, and context. Then read the CV(s) and JD for factual extraction.
+
+Step 4 — Generate the plan
+         Run the invocation below. The intake PDF replaces the manual Q&A; the
+         uploaded documents supply the factual raw material.
+
+Step 5 — Deliver
+         Email [initials]_transition_plan.pdf to the client. Keep generate_plan.py
+         for re-runs when the client requests updates.
+```
+
+---
+
+## Onboarding Questions (Client Intake)
+
+These questions are now captured automatically by the Gradio intake form (`onboarding_form.py`).
+The form collects structured answers and compiles them into a branded intake PDF that is emailed
+to gitonga@gmail.com alongside any uploaded documents. You do not need to ask these questions
+manually — read the intake PDF instead.
+
+The questions and their purpose are documented below for reference: use them if a client
+completes intake verbally or if you need to probe a thin answer from the form.
+
+---
+
+### 1 — Motivation & Context
+
+| # | Question | Why it matters |
+|---|---|---|
+| 1a | What is driving this transition — is it proactive (a new opportunity attracts you) or reactive (layoff, burnout, a life event forced the issue)? | Sets tone: reactive clients need a resilience framing; proactive clients need a momentum framing |
+| 1b | How long have you been thinking seriously about this move? | Short = early-stage → broader target options; Long = frustrated = validate the path clearly |
+| 1c | Have you already taken any concrete steps — a course, a conversation, an application? | Avoids re-suggesting what they've already tried; shows commitment level |
+| 1d | What specifically attracts you to the target domain? (Probe: is it values, income, lifestyle, impact, intellectual interest?) | Feeds elevator pitch and "A Final Word" section; reveals depth of commitment |
+
+---
+
+### 2 — Target Clarity
+
+| # | Question | Why it matters |
+|---|---|---|
+| 2a | How clear are you on the role you want? Scale: "I know the exact title" → "I know the general direction" → "I'm still exploring." | Determines how many target archetypes to present and how definitive the language should be |
+| 2b | Are there specific types of organisations you want to work for — NGO, tech company, government agency, multilateral, corporate, startup? | Directly shapes Section 2 target organisations and Section 4 networking targets |
+| 2c | Are there any roles, sectors, or organisation types you have already ruled out — even if they seem obvious choices? | Prevents wasted sections; avoids insulting the client's prior research |
+| 2d | Who do you admire or want to emulate in the target field — a person, a role, an organisation? | Yields concrete networking targets and helps locate role models for the visibility strategy |
+
+---
+
+### 3 — Constraints & Capacity
+
+| # | Question | Why it matters |
+|---|---|---|
+| 3a | Are you currently employed? If yes: transitioning while employed, or have you left / are about to leave? | Determines whether the plan needs to fit around a day job (evenings/weekends) or can be full-time |
+| 3b | Roughly how many hours per week are realistically available for study, networking, and portfolio work? | Directly sizes semester content — 5 hrs/week ≠ 20 hrs/week |
+| 3c | What is your financial runway — how long can you invest in this transition before you need income from the new field? | Sets urgency level and informs certification budget; short runway → free-first cert path |
+| 3d | Are there geographic constraints — must stay in current city, open to relocation, remote-only preferred? | Localises target organisations and community recommendations |
+| 3e | Are there any personal or family commitments (childcare, caregiving, health) that affect your study schedule? | Prevents an unrealistic pace being built into the plan |
+
+---
+
+### 4 — Financial Expectations
+
+| # | Question | Why it matters |
+|---|---|---|
+| 4a | Are you aiming for a lateral move, a step up, or are you willing to step back in seniority or pay to break in? | Frames the risk conversation; affects which entry-level paths are included |
+| 4b | Is there a minimum income level you need to protect? | Filters out transition paths that are financially unworkable for this client |
+
+---
+
+### 5 — Learning Style & Pace
+
+| # | Question | Why it matters |
+|---|---|---|
+| 5a | How do you learn best — self-paced online, cohort/community, intensive bootcamp, or structured university program? | Shapes course recommendations in each semester card |
+| 5b | Do you prefer breadth-first (explore widely, then specialise) or depth-first (go deep on one thing before the next)? | Determines semester sequencing logic |
+| 5c | Are there learning formats you strongly dislike or have tried without success? | Prevents repeating approaches that don't work for this client |
+
+---
+
+### 6 — Network & Visibility
+
+| # | Question | Why it matters |
+|---|---|---|
+| 6a | Do you have any existing contacts already working in the target domain? | Sizes the warm-network activation section; zero contacts → heavier cold-outreach strategy |
+| 6b | Is your employer or professional network aware of your transition plans, or is this confidential? | Determines whether LinkedIn posting and visibility tactics need to be discreet |
+| 6c | How comfortable are you with public visibility — writing, speaking, posting on LinkedIn? | Calibrates Section 7 (networking/visibility) to the client's risk tolerance |
+| 6d | Do you already have a mentor, or is mentorship something to build into the plan? | Adds mentorship sourcing to the roadmap if needed |
+
+---
+
+### 7 — Past Attempts & Blockers
+
+| # | Question | Why it matters |
+|---|---|---|
+| 7a | Have you tried to make this move before? What got in the way? | Identifies structural blockers (not just motivation gaps) to address in the plan |
+| 7b | What aspects of the transition feel most uncertain or daunting right now? | Ensures the plan directly addresses the client's stated fears, not generic ones |
+
+---
+
+### 8 — Deliverable Preferences
+
+| # | Question | Why it matters |
+|---|---|---|
+| 8a | Who will see this plan — is it for your own use, or will you share it with a sponsor, family member, or potential employer? | Affects tone and level of detail; shared plans need context that solo plans don't |
+| 8b | Are there any sections you'd like to emphasise — or anything you'd like us to skip? | Respects client autonomy; avoids building sections they'll never use |
+| 8c | Is there anything about your background you are particularly proud of, or anything you prefer not to highlight? | Feeds the narrative framing; some clients have non-linear histories that need careful handling |
+
+---
+
+**After intake, map answers to plan sections:**
+
+| Answer | Feeds into |
+|---|---|
+| Motivation type (proactive vs reactive) | Opening tagline box, Section 12 closing |
+| Hours per week available | Semester card content volume |
+| Financial runway | Section 6 certification budget (free vs paid split) |
+| Geographic constraints | Section 2 target organisations |
+| Target clarity level | Number of role archetypes in Section 2 |
+| Learning style | Course format choices in Sections 5 & 6 |
+| Network warmth | Section 7 networking strategy depth |
+| Admired individuals / orgs | Section 7 target contacts |
+| Fears and blockers | Section 12 "A Final Word" — address directly |
+
+---
+
+## Inputs — what arrives and where to find it
+
+When the client submits the intake form, an email arrives at gitonga@gmail.com containing
+everything needed to start the plan. Download all attachments into the client folder before
+proceeding.
+
+| Input | Source | Required? | Purpose |
+|---|---|---|---|
+| Intake PDF (`[Initials]_intake_[date].pdf`) | Form submission email | Yes | Authoritative source for all preferences, constraints, context, and framing decisions |
+| Current CV / résumé | Email attachment (uploaded by client) | Yes | Extract experience, titles, dates, skills, education |
+| LinkedIn export or profile summary | Email attachment | Recommended | Supplement CV; confirm network and endorsements |
+| Target job description | Email attachment | Yes | Anchor the skills gap analysis and role archetypes |
+| Sample learning plan | Email attachment | Optional | Use as a starting point; refine rather than replace |
+| Headshot or professional photo | Email attachment | Optional | Embed in cover page |
+
+**If the client provides multiple CV versions**, read all of them. Different versions often reveal
+different framings of the same experience — use the most comprehensive framing in the plan.
+
+**If any required attachment is missing** from the email, check whether the client skipped that
+upload in the form, then request it directly before proceeding.
+
+---
+
+## Information to extract from inputs
+
+### From the intake PDF (read this first)
+
+The intake PDF is structured in nine sections matching the form. Extract and record:
+
+- **Name, location, currency, timeline** — use verbatim on the cover page and throughout
+- **Motivation type** (proactive / reactive) — sets tone of opening tagline box and Section 12
+- **Target domain and clarity level** — determines number of role archetypes in Section 2 and confidence of language throughout
+- **Preferred org types + ruled-out sectors** — directly populates Section 2 target organisation list; prunes irrelevant options
+- **Hours/week available** — scales semester card content (≤10 hrs → lighter load per semester; ≥25 hrs → fuller content)
+- **Financial runway** — if short (< 6 months), weight Section 6 heavily toward free/low-cost certifications; flag urgency in roadmap framing
+- **Geographic constraints** — localise all org targets, communities, and events to the stated geography
+- **Employment status** — if transitioning while employed, semester plans must fit evenings/weekends; note this explicitly in each semester card
+- **Move type** (lateral / step up / step back) — frames the risk narrative in Section 10 and milestone sequencing in Section 11
+- **Income floor** — filters out transition paths that are financially unworkable; note in Section 6 budget
+- **Preferred learning formats** — every course recommendation in Sections 5 and 6 must match the stated format preferences
+- **Learning preference** (breadth vs depth) — determines whether Semester 1 introduces broadly or dives immediately into the core specialism
+- **Network warmth** — if thin (0–3 contacts), Section 7 needs heavier cold-outreach and community-joining tactics; if strong, activate warm network earlier
+- **Transition confidentiality** — if confidential, all LinkedIn tactics in Section 7 must be discreet (commenting, not posting; private DMs, not public tagging)
+- **Visibility comfort** — scales Section 7 content creation recommendations from none → heavy
+- **Mentor status** — if no mentor wanted, remove mentorship sourcing tasks from tracker; if wanted, add sourcing steps to Semester 1
+- **Past attempts and blockers** — address the specific blocker directly in Section 12; do not offer generic encouragement
+- **Fears and biggest uncertainties** — name them explicitly in "A Final Word" and show how the plan mitigates each
+- **Plan audience** — if shared with an employer or sponsor, increase context and polish; if solo, keep it direct and practical
+- **Sections to emphasise / background notes** — honour these explicitly; if client flagged something to handle with care, do so
+
+### From the CV(s)
+- Most recent job title and employer
+- Years of experience (total and in primary domain)
+- Geographic scope (local / regional / multi-country)
+- Industries covered
+- Team leadership and scale
+- Education and any existing certifications
+- Named references or colleagues (used in networking section)
+- Specific achievements that can be reframed for target sectors
+
+### From the job description
+- Role category (governance / compliance / advisory / ESG / development / etc.)
+- Sector context (NGO / tech / corporate / government / multilateral)
+- Explicit skills required (hard skills: frameworks, tools, certs)
+- Implicit skills required (soft skills: stakeholder engagement, writing, training)
+- Skills the client already has at sufficient level → mark "No Gap"
+- Skills the client is missing → feed into gap analysis and semester plans
+
+### From the learning plan (if provided)
+- Which domains the client has already identified
+- Sequencing logic they are comfortable with
+- Courses or certs they have already considered
+
+---
+
+## Document structure
+
+Produce these sections in order. Each section has a fixed purpose; the content is client-specific.
+
+### Cover Page
+- Full client name
+- Subtitle: "Career Transition Plan"
+- Tagline line: "From [Current Domain] to [Target Domain(s)]"
+- City, country, and plan date
+- Confidentiality notice
+
+### Opening tagline box (motivational framing)
+- One short paragraph: reframe the transition as a strategic extension, not a restart
+- Tone: confident advisory, not cheerleading
+
+### Section 1 — Your Starting Point
+- 3–4 sentence professional summary (drawn from CV)
+- Two-column bullet list of core strengths the client already owns
+- "Strategic Insight" box: explain WHY the client's background is an asset in the target domain
+
+### Section 2 — Where You Are Heading
+- Table of 3–5 target role archetypes: Role | Sector | Why Client Fits
+- Two-column list of 8–10 target organisations (localised to client geography)
+
+### Section 3 — Skills Gap Analysis
+Table: Skill/Knowledge Area | Current Level | Required Level | Gap | Priority
+
+Levels: Expert / Proficient / Working / Aware / Beginner / None
+Gap: None / Minor / Medium / Large / Moderate
+Priority: — / LOW / MED / HIGH
+
+Highlight HIGH-priority rows visually (colour the priority cell).
+
+### Section 4 — The Transition Roadmap (Overview)
+- 1 paragraph framing the overall structure
+- Summary table: Semester | Theme | Duration | Period | Key Output
+- Note parallel tracks (networking, content creation, mentorship, job-readiness)
+
+### Section 5 — Detailed Semester Plans
+One card per semester. Each card contains:
+- Header: Semester number, title, and duration dates
+- Objective (2–4 sentences: what the client will be able to do by the end)
+- Core Topics (specific named courses, frameworks, standards — not vague "study AI")
+- Deliverables / Milestones (concrete, countable outputs)
+- "Connects to [client name]'s background" (bridge between their past and the new domain)
+
+Default semester structure for an 18-month plan:
+
+| Sem | Theme | Duration |
+|---|---|---|
+| 1 | Digital/Domain Foundations | 2 months |
+| 2 | Core Specialisation | 3 months |
+| 3 | Complementary Domain 1 | 2 months |
+| 4 | Complementary Domain 2 | 3 months |
+| 5 | Intersection / Niche | 3 months |
+| 6 | Leadership, Strategy & Market Launch | 3 months |
+
+### Section 6 — Certifications Roadmap
+Table: Certification | Provider | Cost (USD) | Semester | Impact
+
+- Lead with free or low-cost options
+- Group paid certifications by tier (entry / specialist / advanced)
+- Include a total budget estimate with local currency conversion
+- Note scholarship or discount options where they exist
+
+### Section 7 — Networking & Visibility Strategy
+- LinkedIn strategy (posting cadence, commenting, profile updates, hashtags)
+- Communities to join (table: Community | Why)
+- Existing network activation (how to leverage current contacts for warm introductions)
+
+### Section 8 — Portfolio Building
+Table: # | Portfolio Piece | Created In (Semester) | What It Demonstrates
+
+- 6–10 portfolio pieces
+- Each piece should be producible without an employer (mock organisations, hypothetical scenarios)
+- End with a tip: compile into a single portfolio PDF with a cover page
+
+### Section 9 — Monthly Action Tracker
+Table: Month | Learning Focus | Networking Action | Portfolio / Visibility
+
+- One row per month of the plan
+- Keep each cell brief (3–5 items max)
+- This is the client's accountability tool — it should be printable
+
+### Section 10 — Positioning & Narrative
+- Elevator pitch (full draft, ready to use, ~100 words)
+- CV reframing table: Old language | Target Sector Reframe A | Target Sector Reframe B
+  - 4–6 rows covering the client's most significant experience bullets
+
+### Section 11 — Success Metrics
+Table: Milestone | Target Date | Status (blank column for client to fill in)
+
+- 12–18 milestones from first certificate to first job application to offer
+- Include optional milestones (certifications, speaking, publishing)
+
+### Section 12 — A Final Word
+- 3-paragraph closing: motivational, honest, specific to this client's situation
+- Remind the client of the specific advantage their background provides
+- End with an action instruction, not a question
+
+---
+
+## PDF generation approach
+
+Use Python with ReportLab (`reportlab` package). Do not use Markdown-to-PDF converters or
+browser-print pipelines — they cannot produce the table layouts and colour blocks this document requires.
+
+### Colour palette (default — adjust per brand preference)
+```python
+NAVY  = "#1B2A4A"   # Primary dark: section headers, table headers
+TEAL  = "#0E7C7B"   # Secondary: h3 headings, alternating header colour
+GOLD  = "#C9A84C"   # Accent: cover subtitle, rule lines
+LGRAY = "#F4F6F9"   # Background: alternating table rows, shaded boxes
+MGRAY = "#D0D6E0"   # Borders and grid lines
+WHITE = "#FFFFFF"
+BLACK = "#1A1A1A"   # Body text
+```
+
+### Page setup
+- Page size: A4
+- All margins: 1.27 cm (0.5 inch) — tight but readable
+- Footer: page number and document title, 8pt, centered
+
+### Key ReportLab patterns used
+- `SimpleDocTemplate` with `story` list pattern
+- `Table` + `TableStyle` for all structured content (no bare `Paragraph` grids)
+- `KeepTogether` to prevent section headers orphaning from first content
+- `PageBreak` after cover, roadmap overview, tracker, and positioning sections
+- `HRFlowable` for horizontal rules between sections
+- `ParagraphStyle` defined once at the top and reused throughout
+
+### Helper functions to define
+- `section_header(text)` — navy background banner with white bold text
+- `shaded_box(content_rows)` — light grey box with rounded corners for callouts
+- `two_col(left_items, right_items)` — side-by-side bullet columns
+- `semester_card(sem_num, duration, title, objective, topics, deliverables, connects_to)` — full semester block
+- `rule(color, thickness)` — horizontal rule
+
+### Output
+- Save to the client's folder, named: `[initials]_transition_plan.pdf`
+- Print the output path on completion
+
+---
+
+## Quality checklist before delivering
+
+- [ ] Client's name appears exactly as on their CV (check middle initial, spelling)
+- [ ] All experience claims traced back to CV (no invented facts)
+- [ ] All course names are real and currently available (verify provider names)
+- [ ] Certification costs are approximate and flagged as such
+- [ ] Target organisations are real and active in the client's geography
+- [ ] Semester dates are consistent (no gaps, no overlaps, correct months)
+- [ ] Budget total in section 6 matches itemised rows
+- [ ] Elevator pitch uses first person and feels natural spoken aloud
+- [ ] CV reframing table uses language from actual job postings, not generic HR-speak
+- [ ] Portfolio pieces are achievable without an employer or paid access
+- [ ] Monthly tracker rows match semester plan content (no inconsistencies)
+- [ ] PDF renders without errors (`doc.build(story)` completes cleanly)
+- [ ] All pages have a footer with page number
+
+---
+
+## Customisation points by client type
+
+### Client from corporate / multinational background
+- Emphasise transferable frameworks and governance language
+- Target both private sector and NGO/multilateral roles
+- Use their employer's name directly in the narrative (it carries brand weight)
+
+### Client from government / public sector background
+- Emphasise policy and regulatory expertise
+- Target multilateral agencies, development finance, and tech-policy roles
+- Note clearance levels or government relationships as a differentiator
+
+### Client from NGO / international development background
+- Emphasise impact measurement, donor compliance, and cross-cultural programme management
+- Target corporate ESG / sustainability roles, UN agencies, and think tanks
+- Reframe programme delivery language into operations and governance language
+
+### Shorter timeline (6–12 months)
+- Compress to 3–4 semesters
+- Prioritise one target role archetype instead of four
+- Focus certifications on the single highest-signal credential
+- Remove Semester 5 (niche intersection) and fold into Semester 4
+
+### Longer timeline (24+ months)
+- Add a "Year 2 advanced track" section after the 18-month plan
+- Include options for part-time study alongside employment
+- Add a consulting / freelance strategy section for clients who want to bridge domains while still employed
+
+---
+
+## Files to keep in the client folder
+
+```
+[ClientName]/
+├── [Initials]_intake_[date].pdf      ← intake form responses (from submission email)
+├── [original CV files]               ← source material (do not delete)
+├── [JD file]                         ← job description used for gap analysis
+├── [Learning Plan file]              ← client's initial learning plan (if provided)
+├── [Headshot file]                   ← if provided
+├── generate_plan.py                  ← the plan generation script (keep; re-run to update)
+└── [initials]_transition_plan.pdf    ← the deliverable
+```
+
+The intake PDF is the record of what the client told you. Keep it permanently — it is the
+audit trail if the client later disputes the framing or asks why certain choices were made.
+
+Always keep `generate_plan.py` alongside the PDF. If the client requests a change (date update,
+new target role, revised semester), edit the script and re-run — do not edit the PDF directly.
+
+---
+
+## Example invocation
+
+```
+"[Client name] has submitted their intake form. Their intake PDF, CV, and job description
+are in the [ClientName]/ folder. Read the intake PDF first, then the CV and JD, and
+generate the transition plan PDF."
+```
+
+Point to this SKILL.md and the process above will be followed without further prompting.
+
+If the intake form has not yet been submitted, send the client the onboarding form first:
+
+```
+conda run -n ds python onboarding_form.py
+# Opens at http://localhost:7860 — share the link with the client or sit with them to complete it
+```

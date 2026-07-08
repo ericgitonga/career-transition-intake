@@ -1,0 +1,35 @@
+name: Deploy to Hugging Face Spaces
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Push to Hugging Face Spaces
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_USERNAME: ${{ secrets.HF_USERNAME }}
+        run: |
+          git config --global user.email "gitonga@earthranger.com"
+          git config --global user.name "GitHub Actions"
+
+          # Clone the HF Space repo
+          git clone https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/career-transition-intake hf_space
+
+          # Sync files (exclude git internals and the workflow directory itself)
+          rsync -av --exclude='.git' --exclude='.github' . hf_space/
+
+          # Commit and push if anything changed
+          cd hf_space
+          git add .
+          git diff --cached --quiet && echo "No changes to deploy." || \
+            (git commit -m "Deploy from GitHub ${GITHUB_SHA::7}" && git push)

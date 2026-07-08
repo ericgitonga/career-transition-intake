@@ -1,0 +1,12 @@
+# Client folders — never commit client data
+Eric/
+Eric Test/
+Jackie/
+
+# Gradio runtime
+.gradio/
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
