@@ -6,6 +6,48 @@ and ReportLab — no Word, no Google Docs, no design tools required.
 
 ---
 
+## Security First
+
+All components of this workflow — the intake form, the server, and the client data pipeline —
+are built with security as a primary requirement, not an afterthought.
+
+### Intake form security posture (app.py + index.html)
+
+| Control | What it does |
+|---|---|
+| CSRF protection (Flask-WTF) | Every POST to /submit must carry a valid server-issued token; forged cross-site requests are rejected before any handler logic runs |
+| Upload size cap (10 MB) | Flask rejects oversized requests at the framework level before they reach route code |
+| File extension whitelist | Only .pdf, .doc, .docx, .txt, .jpg, .jpeg, .png are accepted; any other extension returns HTTP 400 before the file is written to disk |
+| Subresource Integrity (SRI) | Bootstrap CSS and JS are loaded from the CDN with SHA-384 integrity hashes; tampered CDN files are blocked by the browser |
+| Rate limiting (Flask-Limiter) | /submit is throttled to 5 requests/minute and 20/hour per IP to prevent quota exhaustion and flood attacks |
+| HTTP security headers | Every response carries X-Frame-Options: DENY, X-Content-Type-Options: nosniff, a strict Content-Security-Policy, and Referrer-Policy |
+| Secret key enforcement | The app refuses to start if SECRET_KEY is absent from the environment |
+| Input length limits | All text fields are truncated server-side (_clip()) before reaching the PDF builder |
+| Control character stripping | Fields used in the email subject/body are sanitised (_sanitize()) to prevent body-spoofing |
+| Unpredictable temp filenames | PDF and upload temp files use secrets.token_hex(8), not guessable initials + timestamp |
+| Temp file cleanup | All temp files are deleted in a finally block after the response is sent |
+| Submission logging | Every submission is logged (app.logger.info) for audit trail and abuse detection |
+| Pinned dependencies | All packages are pinned to known-good versions in requirements.txt |
+| No inline scripts | All JavaScript is served from static/form.js, enabling a strict script-src CSP with no 'unsafe-inline' |
+
+### Client data handling rules
+
+- **Never commit client data.** `Clients/` is gitignored permanently. Even a test submission should not be pushed.
+- **Never log personally identifiable information in detail.** Log only name and email for audit purposes; do not log full form responses.
+- **Never share intake PDFs** outside the consultant's email inbox. The files contain sensitive career and financial information.
+- **Temp files are ephemeral.** The server deletes them after each submission. Do not read from them after the response is sent.
+- **The `generate_security_pdf.py` script is gitignored** — it contains internal audit findings not for client or public view.
+
+### When making changes to the form or server
+
+- Any change to form fields must also be reviewed against the input-length limits in `_clip()` calls in `submit()`.
+- Any new file upload field must route through `_safe_suffix()`.
+- Any new route that accepts POST data must be decorated with the CSRF-exempt decorator or protected by the existing `CSRFProtect(app)` instance.
+- Any new external CDN resource must include verified SRI hashes.
+- After any dependency update, re-pin `requirements.txt` using `pip show <package>`.
+
+---
+
 ## When to use this skill
 
 - A client has a strong background in one domain and wants to pivot to an adjacent or emerging field
@@ -379,6 +421,14 @@ BLACK = "#1A1A1A"   # Body text
 
 ## Quality checklist before delivering
 
+### Security checks (run first)
+- [ ] No client data (intake PDFs, CVs, JDs) exists outside `Clients/` — confirm with `git status`
+- [ ] `Clients/` does not appear in `git add` or `git commit` output
+- [ ] `generate_security_pdf.py` is not tracked (`git ls-files generate_security_pdf.py` returns nothing)
+- [ ] No personally identifiable information is in any committed file or git log entry
+- [ ] If any new dependency was added, it is pinned in `requirements.txt`
+
+### Content checks
 - [ ] Client's name appears exactly as on their CV (check middle initial, spelling)
 - [ ] All experience claims traced back to CV (no invented facts)
 - [ ] All course names are real and currently available (verify provider names)

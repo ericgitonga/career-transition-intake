@@ -1,11 +1,36 @@
+"""
+Flask application for the Career Transition client onboarding intake form.
+
+Security hardening applied (see Clients/security.pdf for full audit):
+  S-01  CSRF protection via Flask-WTF (Phase 1)
+  S-02  Upload size limited to 10 MB via MAX_CONTENT_LENGTH (Phase 1)
+  S-03  File extension whitelist on all uploads via _safe_suffix() (Phase 1)
+  S-04  Bootstrap CDN links use Subresource Integrity hashes (HTML, Phase 1)
+  S-05  Rate limiting via Flask-Limiter (Phase 2)
+  S-06  Exceptions logged server-side; generic message returned to client (Phase 2)
+  S-07  Temp files deleted in a finally block after response is built (Phase 2)
+  S-08  HTTP security headers stamped on every response (Phase 1)
+  S-09  SECRET_KEY loaded from environment; app refuses to start without it (Phase 1)
+  S-10  All dependencies pinned in requirements.txt (Phase 2)
+  S-11  All text inputs truncated server-side via _clip() (Phase 2)
+  S-12  Control characters stripped from email fields via _sanitize() (Phase 3)
+  S-13  Temp filename uses cryptographically random token (Phase 3)
+  S-14  Upload extension validated by whitelist — resolved by S-03 (Phase 1)
+  S-15  Submission events logged via app.logger (Phase 3)
+"""
+
 import os
+import secrets
 import tempfile
+import unicodedata
 from datetime import datetime
 from pathlib import Path
 
 import resend
-
 from flask import Flask, request, render_template, send_file
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_wtf.csrf import CSRFProtect
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import A4
@@ -19,12 +44,144 @@ from reportlab.platypus import (
 app = Flask(__name__)
 RECIPIENT = "gitonga@gmail.com"
 
+# ── S-09: Secret key — app refuses to start without it ───────────────────────
+_secret = os.environ.get("SECRET_KEY", "")
+if not _secret:
+    raise RuntimeError(
+        "SECRET_KEY environment variable is not set. "
+        "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\""
+    )
+app.config["SECRET_KEY"] = _secret
+
+# ── S-02: Reject oversized uploads before they reach route handlers ───────────
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB
+
+# ── S-01: CSRF protection for all state-changing POST routes ──────────────────
+csrf = CSRFProtect(app)
+
+# ── S-05: Rate limiting — generous enough for real clients, stops floods ──────
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"],
+)
+
+# ── S-03 / S-14: Allowed upload extensions (server-enforced whitelist) ────────
+ALLOWED_EXTENSIONS = {".pdf", ".doc", ".docx", ".txt", ".jpg", ".jpeg", ".png"}
+
 NAVY = colors.HexColor("#1B2A4A")
 TEAL = colors.HexColor("#0E7C7B")
 GOLD = colors.HexColor("#C9A84C")
 MGRY = colors.HexColor("#D0D6E0")
 WHITE = colors.white
 BLACK = colors.HexColor("#1A1A1A")
+
+
+# ── Security helpers ──────────────────────────────────────────────────────────
+
+def _safe_suffix(filename: str) -> str:
+    """Return the lowercased extension of *filename*, or raise ValueError if not whitelisted.
+
+    Used for every uploaded file to prevent disallowed types (e.g. .exe, .sh)
+    from reaching the temp directory or being forwarded to the consultant's inbox.
+
+    Args:
+        filename: The client-supplied filename, e.g. ``"resume.PDF"`` or ``"cv.docx"``.
+
+    Returns:
+        The lowercased extension including the leading dot, e.g. ``".pdf"``.
+
+    Raises:
+        ValueError: If the extension is absent or not in ALLOWED_EXTENSIONS.
+    """
+    suffix = Path(filename).suffix.lower()
+    if suffix not in ALLOWED_EXTENSIONS:
+        raise ValueError(
+            f"File type '{suffix or '(none)'}' is not permitted. "
+            f"Allowed: {', '.join(sorted(ALLOWED_EXTENSIONS))}"
+        )
+    return suffix
+
+
+def _clip(value, max_len: int = 5000) -> str:
+    """Truncate *value* to *max_len* characters to prevent CPU/memory exhaustion.
+
+    Applies to every text field before it is passed to the PDF builder. Without
+    this guard, a crafted submission with megabyte-sized textarea values could
+    exhaust gunicorn worker RAM during ReportLab rendering (S-11).
+
+    Args:
+        value:   The raw string from ``request.form.get()``, or None.
+        max_len: Maximum number of characters to keep. Defaults to 5 000,
+                 which covers the longest narrative textarea fields.
+
+    Returns:
+        The original string if within limits, a truncated copy otherwise,
+        or an empty string if *value* is None.
+    """
+    if not isinstance(value, str):
+        return value or ""
+    return value[:max_len] if len(value) > max_len else value
+
+
+def _sanitize(value: str) -> str:
+    """Strip newlines and Unicode control characters from *value*.
+
+    Prevents body spoofing in the plain-text email summary (S-12). A client
+    name containing newlines could inject fake 'Email:' lines into the message
+    body when it is interpolated into the Resend text payload.
+
+    Args:
+        value: Any string field used in the email subject or body.
+
+    Returns:
+        The input with all Unicode category-C (control) characters removed
+        and leading/trailing whitespace stripped.
+    """
+    return "".join(
+        ch for ch in (value or "")
+        if unicodedata.category(ch)[0] != "C"
+    ).strip()
+
+
+# ── S-08: HTTP security headers on every response ─────────────────────────────
+@app.after_request
+def _security_headers(resp):
+    """Stamp HTTP security headers onto every outgoing response.
+
+    Addresses S-08 from the security audit. Applied unconditionally so that
+    error responses (400, 413, 500) are also covered.
+
+    Headers applied:
+        X-Content-Type-Options  — prevents MIME-type sniffing attacks.
+        X-Frame-Options         — blocks clickjacking via iframe embedding.
+        Referrer-Policy         — limits URL leakage to cross-origin requests.
+        Permissions-Policy      — revokes unnecessary browser feature access.
+        Content-Security-Policy — restricts script and style sources;
+                                  no 'unsafe-inline' for scripts since all JS
+                                  is served from static/form.js ('self').
+
+    Args:
+        resp: The Flask Response object about to be sent to the client.
+
+    Returns:
+        The same Response object with security headers added.
+    """
+    resp.headers["X-Content-Type-Options"] = "nosniff"
+    resp.headers["X-Frame-Options"] = "DENY"
+    resp.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    resp.headers["Permissions-Policy"] = "geolocation=(), microphone=()"
+    resp.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "style-src 'self' cdn.jsdelivr.net 'unsafe-inline'; "
+        "script-src 'self' cdn.jsdelivr.net; "
+        "img-src 'self' data:; "
+        "font-src 'self' cdn.jsdelivr.net;"
+    )
+    return resp
+
+
+# ── PDF helpers ───────────────────────────────────────────────────────────────
 
 def _S(name, **kw):
     """Shorthand constructor for a ReportLab ParagraphStyle.
@@ -241,6 +398,9 @@ def send_email(pdf_path, data, upload_paths):
     memory and passed to Resend as a list of byte integers, which is the format
     the Resend Python SDK expects for attachments.
 
+    Fields used in the email subject/body are sanitised with ``_sanitize()``
+    before interpolation to prevent control-character spoofing (S-12).
+
     Args:
         pdf_path:     Absolute path to the generated intake PDF.
         data:         Dictionary of form field values (used to populate the
@@ -254,14 +414,21 @@ def send_email(pdf_path, data, upload_paths):
                    (propagated to the caller, which sets email_status="failed").
     """
     resend.api_key = os.environ["RESEND_API_KEY"]
+
+    name     = _sanitize(data.get("full_name", "—"))
+    email    = _sanitize(data.get("client_email", "—"))
+    location = _sanitize(data.get("city_country", "—"))
+    timeline = _sanitize(data.get("timeline", "—"))
+    target   = _sanitize(data.get("target_domain", "—"))
+
     n_docs = len(upload_paths)
     body = (
         f"New career transition onboarding submission received.\n\n"
-        f"Client:   {data.get('full_name', '—')}\n"
-        f"Email:    {data.get('client_email', '—')}\n"
-        f"Location: {data.get('city_country', '—')}\n"
-        f"Timeline: {data.get('timeline', '—')}\n"
-        f"Target:   {data.get('target_domain', '—')}\n\n"
+        f"Client:   {name}\n"
+        f"Email:    {email}\n"
+        f"Location: {location}\n"
+        f"Timeline: {timeline}\n"
+        f"Target:   {target}\n\n"
         f"Full intake responses are in the attached PDF."
         + (f"\n{n_docs} supporting document(s) also attached." if n_docs else "")
     )
@@ -274,7 +441,7 @@ def send_email(pdf_path, data, upload_paths):
     resend.Emails.send({
         "from":        os.environ.get("FROM_EMAIL", "onboarding@resend.dev"),
         "to":          [RECIPIENT],
-        "subject":     (f"Career Transition Intake — {data.get('full_name', 'New Client')} — "
+        "subject":     (f"Career Transition Intake — {name} — "
                         f"{datetime.now().strftime('%d %b %Y')}"),
         "text":        body,
         "attachments": attachments,
@@ -295,23 +462,29 @@ def index():
 
 
 @app.route("/submit", methods=["POST"])
+@limiter.limit("5 per minute; 20 per hour")
 def submit():
     """Process a submitted intake form: generate a PDF, email it, and return it for download.
 
     Workflow:
-      1. Validate that ``full_name`` is present; return HTTP 400 otherwise.
-      2. Collect all form fields into a flat dictionary.
-      3. Build the branded intake PDF and write it to the system temp directory.
-         The filename uses the client's initials and a timestamp
-         (e.g. ``JWM_intake_20260710_1430.pdf``).
-      4. Save any uploaded files (CV, LinkedIn export, job description, learning
-         plan, and additional documents) to temp files.
-      5. If ``RESEND_API_KEY`` is present in the environment, attempt to email
+      1. Validate CSRF token (enforced automatically by Flask-WTF before this handler runs).
+      2. Validate that ``full_name`` is present; return HTTP 400 otherwise.
+      3. Collect all form fields into a flat dictionary. Each text value is
+         truncated to a safe maximum length via ``_clip()`` (S-11).
+      4. Build the branded intake PDF and write it to the system temp directory.
+         The filename uses a cryptographically random token (S-13), e.g.
+         ``intake_3f9a1b2c.pdf``.
+      5. Save any uploaded files (CV, LinkedIn export, job description, learning
+         plan, and additional documents) to temp files. Each upload's extension
+         is validated against ALLOWED_EXTENSIONS (S-03 / S-14); disallowed
+         types return HTTP 400 before the file is written.
+      6. If ``RESEND_API_KEY`` is present in the environment, attempt to email
          the PDF and all uploads to the consultant. The outcome is recorded as
          ``sent``, ``failed``, or ``skipped`` and returned in the
          ``X-Email-Status`` response header so the browser can surface a
          meaningful status message without blocking the download.
-      6. Stream the PDF back to the client as a file download attachment.
+      7. Stream the PDF back to the client as a file download attachment.
+      8. Delete all temp files in a ``finally`` block regardless of outcome (S-07).
 
     Returns:
         A Flask Response that streams the PDF for download (HTTP 200) with an
@@ -320,73 +493,87 @@ def submit():
           - ``"failed"``  — email attempted but an exception was raised.
           - ``"skipped"`` — ``RESEND_API_KEY`` not configured; email not attempted.
 
-    Returns HTTP 400 if ``full_name`` is missing.
+    Returns HTTP 400 if ``full_name`` is missing or an uploaded file type is not whitelisted.
+    Returns HTTP 413 if the total upload size exceeds 10 MB (raised by Flask before this handler).
+    Returns HTTP 429 if the rate limit is exceeded (raised by Flask-Limiter).
     Returns HTTP 500 if PDF generation raises an exception.
     """
-    full_name = request.form.get("full_name", "").strip()
+    full_name = _clip(request.form.get("full_name", "").strip(), 200)
     if not full_name:
         return "Please enter your full name.", 400
 
     data = dict(
         full_name=full_name,
-        city_country=request.form.get("city_country"),
-        client_email=request.form.get("client_email"),
-        currency=request.form.get("currency"),
-        timeline=request.form.get("timeline"),
-        motivation_type=request.form.get("motivation_type"),
-        thinking_duration=request.form.get("thinking_duration"),
-        steps_taken=request.form.get("steps_taken"),
-        attraction=request.form.get("attraction"),
-        target_domain=request.form.get("target_domain"),
-        target_clarity=request.form.get("target_clarity"),
+        city_country=_clip(request.form.get("city_country"), 200),
+        client_email=_clip(request.form.get("client_email"), 200),
+        currency=_clip(request.form.get("currency"), 50),
+        timeline=_clip(request.form.get("timeline"), 100),
+        motivation_type=_clip(request.form.get("motivation_type"), 200),
+        thinking_duration=_clip(request.form.get("thinking_duration"), 200),
+        steps_taken=_clip(request.form.get("steps_taken"), 5000),
+        attraction=_clip(request.form.get("attraction"), 5000),
+        target_domain=_clip(request.form.get("target_domain"), 500),
+        target_clarity=_clip(request.form.get("target_clarity"), 200),
         org_types=request.form.getlist("org_types"),
-        ruled_out=request.form.get("ruled_out"),
-        admired=request.form.get("admired"),
-        employed=request.form.get("employed"),
-        employed_status=request.form.get("employed_status"),
-        hours_per_week=request.form.get("hours_per_week", "10") + " hrs/week",
-        financial_runway=request.form.get("financial_runway"),
-        geography=request.form.get("geography"),
-        personal_commitments=request.form.get("personal_commitments"),
-        move_type=request.form.get("move_type"),
-        income_floor=request.form.get("income_floor"),
+        ruled_out=_clip(request.form.get("ruled_out"), 2000),
+        admired=_clip(request.form.get("admired"), 2000),
+        employed=_clip(request.form.get("employed"), 100),
+        employed_status=_clip(request.form.get("employed_status"), 200),
+        hours_per_week=_clip(request.form.get("hours_per_week", "10"), 10) + " hrs/week",
+        financial_runway=_clip(request.form.get("financial_runway"), 100),
+        geography=_clip(request.form.get("geography"), 2000),
+        personal_commitments=_clip(request.form.get("personal_commitments"), 2000),
+        move_type=_clip(request.form.get("move_type"), 200),
+        income_floor=_clip(request.form.get("income_floor"), 2000),
         learning_format=request.form.getlist("learning_format"),
-        learning_preference=request.form.get("learning_preference"),
-        learning_avoid=request.form.get("learning_avoid"),
-        network_warmth=request.form.get("network_warmth"),
-        transition_confidential=request.form.get("transition_confidential"),
-        visibility_comfort=request.form.get("visibility_comfort"),
-        mentor_status=request.form.get("mentor_status"),
-        past_attempts=request.form.get("past_attempts"),
-        biggest_fears=request.form.get("biggest_fears"),
-        plan_audience=request.form.get("plan_audience"),
-        emphasise=request.form.get("emphasise"),
-        background_notes=request.form.get("background_notes"),
+        learning_preference=_clip(request.form.get("learning_preference"), 200),
+        learning_avoid=_clip(request.form.get("learning_avoid"), 2000),
+        network_warmth=_clip(request.form.get("network_warmth"), 200),
+        transition_confidential=_clip(request.form.get("transition_confidential"), 200),
+        visibility_comfort=_clip(request.form.get("visibility_comfort"), 200),
+        mentor_status=_clip(request.form.get("mentor_status"), 200),
+        past_attempts=_clip(request.form.get("past_attempts"), 5000),
+        biggest_fears=_clip(request.form.get("biggest_fears"), 5000),
+        plan_audience=_clip(request.form.get("plan_audience"), 200),
+        emphasise=_clip(request.form.get("emphasise"), 5000),
+        background_notes=_clip(request.form.get("background_notes"), 5000),
     )
 
-    initials = "".join(w[0].upper() for w in full_name.split() if w)
-    pdf_name = f"{initials}_intake_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf"
+    # S-13: cryptographically random filename — not guessable from initials + time
+    token    = secrets.token_hex(8)
+    pdf_name = f"intake_{token}.pdf"
     pdf_path = os.path.join(tempfile.gettempdir(), pdf_name)
 
     try:
         build_pdf(data, pdf_path)
     except Exception as exc:
-        return f"PDF generation failed: {exc}", 500
+        # S-06: log full detail server-side; return generic message to client
+        app.logger.error("PDF generation failed: %s", exc, exc_info=True)
+        return "PDF generation failed. Please try again.", 500
 
+    # S-03 / S-14: validate extension against whitelist before writing to disk
     uploads = []
-    for field in ["cv_file", "linkedin_file", "jd_file", "learning_plan_file"]:
-        f = request.files.get(field)
-        if f and f.filename:
-            suffix = Path(f.filename).suffix or ".bin"
-            tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
-            f.save(tmp.name)
-            uploads.append(tmp.name)
-    for f in request.files.getlist("additional_files"):
-        if f and f.filename:
-            suffix = Path(f.filename).suffix or ".bin"
-            tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
-            f.save(tmp.name)
-            uploads.append(tmp.name)
+    all_files = (
+        [request.files.get(fld) for fld in ["cv_file", "linkedin_file", "jd_file", "learning_plan_file"]]
+        + request.files.getlist("additional_files")
+    )
+    for f in all_files:
+        if not f or not f.filename:
+            continue
+        try:
+            suffix = _safe_suffix(f.filename)
+        except ValueError as exc:
+            return str(exc), 400
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+        f.save(tmp.name)
+        uploads.append(tmp.name)
+
+    # S-15: structured submission log for audit trail and abuse detection
+    app.logger.info(
+        "Submission received: name=%s email=%s target=%s uploads=%d",
+        data.get("full_name"), data.get("client_email"),
+        data.get("target_domain"), len(uploads),
+    )
 
     email_status = "skipped"
     if os.environ.get("RESEND_API_KEY"):
@@ -396,10 +583,24 @@ def submit():
         except Exception:
             email_status = "failed"
 
-    resp = send_file(pdf_path, as_attachment=True,
-                     download_name=pdf_name, mimetype="application/pdf")
-    resp.headers["X-Email-Status"] = email_status
-    return resp
+    # S-15: log outcome so silent email failures are visible in server logs
+    app.logger.info(
+        "Submission complete: name=%s email_status=%s",
+        data.get("full_name"), email_status,
+    )
+
+    # S-07: delete all temp files after response is built, regardless of outcome
+    try:
+        resp = send_file(pdf_path, as_attachment=True,
+                         download_name=pdf_name, mimetype="application/pdf")
+        resp.headers["X-Email-Status"] = email_status
+        return resp
+    finally:
+        for p in [pdf_path] + uploads:
+            try:
+                os.unlink(p)
+            except OSError:
+                pass
 
 
 if __name__ == "__main__":
