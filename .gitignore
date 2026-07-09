@@ -1,7 +1,7 @@
 # Client folders — never commit client data
 Clients/
 
-# Gradio runtime
+# Runtime artefacts
 .gradio/
 __pycache__/
 *.pyc

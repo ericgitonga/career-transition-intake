@@ -18,17 +18,18 @@ and ReportLab — no Word, no Google Docs, no design tools required.
 
 ```
 Step 1 — Send the intake form
-         Share the link to onboarding_form.py (running locally on port 7860, or hosted).
-         The client fills in all nine sections and uploads their documents.
+         Share the hosted URL with the client:
+         https://career-transition-intake.onrender.com
+         The client fills in all ten sections and uploads their documents.
 
 Step 2 — Receive the email
-         On submission the form emails gitonga@gmail.com with:
+         On submission the form emails gitonga@gmail.com automatically with:
            • [Initials]_intake_[date].pdf  — structured PDF of all form responses
            • CV / résumé (if uploaded)
            • LinkedIn export (if uploaded)
            • Target job description (if uploaded)
            • Learning plan (if uploaded)
-           • Headshot (if uploaded)
+           • Any additional documents uploaded
 
 Step 3 — Download and read
          Save all attachments into the client's folder (create Clients/[ClientName]/ if new).
@@ -48,10 +49,10 @@ Step 5 — Deliver
 
 ## Onboarding Questions (Client Intake)
 
-These questions are now captured automatically by the Gradio intake form (`onboarding_form.py`).
-The form collects structured answers and compiles them into a branded intake PDF that is emailed
-to gitonga@gmail.com alongside any uploaded documents. You do not need to ask these questions
-manually — read the intake PDF instead.
+These questions are now captured automatically by the hosted intake form at
+https://career-transition-intake.onrender.com. The form collects structured answers and compiles
+them into a branded intake PDF that is emailed to gitonga@gmail.com alongside any uploaded
+documents. You do not need to ask these questions manually — read the intake PDF instead.
 
 The questions and their purpose are documented below for reference: use them if a client
 completes intake verbally or if you need to probe a thin answer from the form.
@@ -170,7 +171,7 @@ proceeding.
 | LinkedIn export or profile summary | Email attachment | Recommended | Supplement CV; confirm network and endorsements |
 | Target job description | Email attachment | Yes | Anchor the skills gap analysis and role archetypes |
 | Sample learning plan | Email attachment | Optional | Use as a starting point; refine rather than replace |
-| Headshot or professional photo | Email attachment | Optional | Embed in cover page |
+| Additional documents | Email attachment | Optional | Any supplementary files uploaded by the client |
 
 **If the client provides multiple CV versions**, read all of them. Different versions often reveal
 different framings of the same experience — use the most comprehensive framing in the plan.
@@ -433,7 +434,7 @@ Clients/
     ├── [original CV files]               ← source material (do not delete)
     ├── [JD file]                         ← job description used for gap analysis
     ├── [Learning Plan file]              ← client's initial learning plan (if provided)
-    ├── [Headshot file]                   ← if provided
+    ├── [Additional files]                ← any other documents uploaded by the client
     ├── generate_plan.py                  ← the plan generation script (keep; re-run to update)
     └── [initials]_transition_plan.pdf    ← the deliverable
 ```
@@ -456,9 +457,8 @@ generate the transition plan PDF."
 
 Point to this SKILL.md and the process above will be followed without further prompting.
 
-If the intake form has not yet been submitted, send the client the onboarding form first:
+If the intake form has not yet been submitted, send the client the hosted form link:
 
 ```
-conda run -n ds python onboarding_form.py
-# Opens at http://localhost:7860 — share the link with the client or sit with them to complete it
+https://career-transition-intake.onrender.com
 ```
