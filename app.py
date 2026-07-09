@@ -242,7 +242,7 @@ def submit():
         return f"PDF generation failed: {exc}", 500
 
     uploads = []
-    for field in ["cv_file", "linkedin_file", "jd_file", "learning_plan_file", "headshot_file"]:
+    for field in ["cv_file", "linkedin_file", "jd_file", "learning_plan_file"]:
         f = request.files.get(field)
         if f and f.filename:
             suffix = Path(f.filename).suffix or ".bin"
