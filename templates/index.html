@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Career Transition Onboarding</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root { --navy:#1B2A4A; --teal:#0E7C7B; --gold:#C9A84C; }
+    body { background:#f4f6f9; font-size:.95rem; }
+    .form-header { background:var(--navy); color:#fff; padding:2rem; border-radius:.5rem; margin-bottom:1.5rem; }
+    .form-header h1 { color:#fff; font-size:1.6rem; margin-bottom:.25rem; }
+    .form-header p  { color:var(--gold); margin:0; }
+    .accordion-button { font-weight:600; color:var(--navy); }
+    .accordion-button:not(.collapsed) { background:var(--navy); color:#fff; box-shadow:none; }
+    .accordion-button:not(.collapsed)::after { filter:invert(1); }
+    .accordion-button:focus { box-shadow:none; }
+    .num { background:var(--gold); color:#fff; border-radius:50%;
+           width:22px; height:22px; display:inline-flex; align-items:center;
+           justify-content:center; font-size:.72rem; font-weight:700; margin-right:8px; flex-shrink:0; }
+    .btn-submit { background:var(--teal); border-color:var(--teal); font-size:1.05rem; }
+    .btn-submit:hover { background:var(--navy); border-color:var(--navy); }
+    .form-label { font-weight:600; color:var(--navy); margin-bottom:.3rem; }
+    .form-text  { color:#666; }
+    .range-val  { font-weight:700; color:var(--teal); }
+  </style>
+</head>
+<body>
+<div class="container py-4" style="max-width:860px;">
+
+  <div class="form-header">
+    <h1>Career Transition Onboarding</h1>
+    <p>Complete all sections below. Your responses will be compiled into a branded PDF and emailed to your consultant.</p>
+  </div>
+
+  <form id="form" enctype="multipart/form-data" novalidate>
+  <div class="accordion" id="acc">
+
+    <!-- 1. Personal Information -->
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#s1">
+          <span class="num">1</span> Personal Information
+        </button>
+      </h2>
+      <div id="s1" class="accordion-collapse collapse show">
+        <div class="accordion-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Full name *</label>
+              <input type="text" name="full_name" class="form-control" placeholder="e.g. Jane Wanjiru Mwangi" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Your email address</label>
+              <input type="email" name="client_email" class="form-control" placeholder="jane@example.com">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">City &amp; Country</label>
+              <input type="text" name="city_country" class="form-control" placeholder="e.g. Nairobi, Kenya">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Preferred currency</label>
+              <input type="text" name="currency" class="form-control" placeholder="e.g. KES / USD">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Transition timeline preference</label>
+              <div class="d-flex flex-wrap gap-3">
+                {% for v in ["6 months (urgent)","12 months","18 months (default)","24 months","24+ months (patient/part-time)"] %}
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="timeline" value="{{ v }}" id="tl{{ loop.index }}"
+                         {% if v == "18 months (default)" %}checked{% endif %}>
+                  <label class="form-check-label" for="tl{{ loop.index }}">{{ v }}</label>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Motivation & Context -->
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#s2">
+          <span class="num">2</span> Motivation &amp; Context
+        </button>
+      </h2>
+      <div id="s2" class="accordion-collapse collapse">
+        <div class="accordion-body">
+          <div class="mb-3">
+            <label class="form-label">What is driving this transition?</label>
+            {% for v in ["Proactive — a new opportunity genuinely excites me","Reactive — layoff, redundancy, or job loss","Reactive — burnout or values misalignment","Reactive — life event (relocation, family, health)","Mixed — both push and pull factors"] %}
+            <div class="form-check"><input class="form-check-input" type="radio" name="motivation_type" value="{{ v }}" id="mt{{ loop.index }}"><label class="form-check-label" for="mt{{ loop.index }}">{{ v }}</label></div>
+            {% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">How long have you been seriously thinking about this move?</label>
+            {% for v in ["Less than 3 months — early stage","3–6 months","6–12 months","More than a year","Several years — this has been on hold"] %}
+            <div class="form-check"><input class="form-check-input" type="radio" name="thinking_duration" value="{{ v }}" id="td{{ loop.index }}"><label class="form-check-label" for="td{{ loop.index }}">{{ v }}</label></div>
+            {% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Concrete steps already taken</label>
+            <textarea name="steps_taken" class="form-control" rows="3" placeholder="e.g. Completed Coursera AI for Everyone; attended two industry events"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">What specifically attracts you to the target domain?</label>
+            <textarea name="attraction" class="form-control" rows="4" placeholder="e.g. I want work that aligns with my environmental values..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Target Role Clarity -->
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#s3">
+          <span class="num">3</span> Target Role Clarity
+        </button>
+      </h2>
+      <div id="s3" class="accordion-collapse collapse">
+        <div class="accordion-body">
+          <div class="mb-3">
+            <label class="form-label">Target domain / field *</label>
+            <input type="text" name="target_domain" class="form-control" placeholder="e.g. Climate Finance, ESG Advisory, Digital Health">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">How clear are you on the role you want?</label>
+            {% for v in ["Very clear — I know the exact title and sector","Clear — I know the general direction and function","Partially clear — I have 2–3 options I'm weighing","Exploring — I know what I'm leaving, not where I'm going"] %}
+            <div class="form-check"><input class="form-check-input" type="radio" name="target_clarity" value="{{ v }}" id="tc{{ loop.index }}"><label class="form-check-label" for="tc{{ loop.index }}">{{ v }}</label></div>
+            {% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Preferred organisation types (select all that apply)</label>
+            <div class="row">
+              {% for v in ["NGO / Non-profit","Multilateral / UN agency","Development finance institution","Corporate / Multinational","Tech company","Government / Public sector","Think tank / Research institute","Consultancy","Startup","Academic institution"] %}
+              <div class="col-md-6">
+                <div class="form-check"><input class="form-check-input" type="checkbox" name="org_types" value="{{ v }}" id="ot{{ loop.index }}"><label class="form-check-label" for="ot{{ loop.index }}">{{ v }}</label></div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Roles / sectors explicitly ruled out</label>
+            <textarea name="ruled_out" class="form-control" rows="2" placeholder="e.g. No pure sales roles; not interested in extractive industries"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">People or organisations you admire in the target field</label>
+            <textarea name="admired" class="form-control" rows="2" placeholder="e.g. Ellen MacArthur Foundation; Dr. Akinwumi Adesina"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Constraints & Capacity -->
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#s4">
+          <span class="num">4</span> Constraints &amp; Capacity
+        </button>
+      </h2>
+      <div id="s4" class="accordion-collapse collapse">
+        <div class="accordion-body">
+          <div class="mb-3">
+            <label class="form-label">Are you currently employed?</label>
+            {% for v in ["Yes","No — I have left / been made redundant","No — about to leave"] %}
+            <div class="form-check"><input class="form-check-input" type="radio" name="employed" value="{{ v }}" id="em{{ loop.index }}"><label class="form-check-label" for="em{{ loop.index }}">{{ v }}</label></div>
+            {% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">If employed — which best describes your situation?</label>
+            {% for v in ["Transitioning while employed (evenings / weekends only)","Planning to leave soon to focus full-time on the transition","Not applicable"] %}
+            <div class="form-check"><input class="form-check-input" type="radio" name="employed_status" value="{{ v }}" id="es{{ loop.index }}" {% if v == "Not applicable" %}checked{% endif %}><label class="form-check-label" for="es{{ loop.index }}">{{ v }}</label></div>
+            {% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Hours per week available: <span class="range-val" id="hrs-val">10</span></label>
+            <input type="range" name="hours_per_week" class="form-range" min="2" max="60" step="1" value="10" id="hrs-range">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Financial runway</label>
+            {% for v in ["Less than 3 months","3–6 months","6–12 months","12–18 months","18+ months","Currently employed — no runway needed"] %}
+            <div class="form-check"><input class="form-check-input" type="radio" name="financial_runway" value="{{ v }}" id="fr{{ loop.index }}"><label class="form-check-label" for="fr{{ loop.index }}">{{ v }}</label></div>
+            {% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Geographic constraints</label>
+            <textarea name="geography" class="form-control" rows="2" placeholder="e.g. Must stay in Nairobi; open to East Africa; remote-only preferred"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Personal or family commitments affecting your study schedule (optional)</label>
+            <textarea name="personal_commitments" class="form-control" rows="2" placeholder="e.g. Primary caregiver for young children — evenings only"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Financial Expectations -->
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#s5">
+          <span class="num">5</span> Financial Expectations
+        </button>
+      </h2>
+      <div id="s5" class="accordion-collapse collapse">
+        <div class="accordion-body">
+          <div class="mb-3">
+            <label class="form-label">Type of move you are targeting</label>
+            {% for v in ["Step up — I expect to earn more in the new field","Lateral — roughly the same level and pay","Step back in seniority / pay to break in — acceptable short-term","Unsure — open to guidance"] %}
+            <div class="form-check"><input class="form-check-input" type="radio" name="move_type" value="{{ v }}" id="mv{{ loop.index }}"><label class="form-check-label" for="mv{{ loop.index }}">{{ v }}</label></div>
+            {% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Minimum income level to protect (optional)</label>
+            <textarea name="income_floor" class="form-control" rows="2" placeholder="e.g. USD 60,000 / year — below this I cannot cover my obligations"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Learning Style & Pace -->
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#s6">
+          <span class="num">6</span> Learning Style &amp; Pace
+        </button>
+      </h2>
+      <div id="s6" class="accordion-collapse collapse">
+        <div class="accordion-body">
+          <div class="mb-3">
+            <label class="form-label">Preferred learning formats (select all that apply)</label>
+            {% for v in ["Self-paced online (Coursera, edX, LinkedIn Learning)","Cohort / community-based program","Intensive bootcamp","University / postgrad program","Mentorship / apprenticeship","Books & self-study","In-person workshops / conferences"] %}
+            <div class="form-check"><input class="form-check-input" type="checkbox" name="learning_format" value="{{ v }}" id="lf{{ loop.index }}"><label class="form-check-label" for="lf{{ loop.index }}">{{ v }}</label></div>
+            {% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">How do you prefer to build knowledge?</label>
+            {% for v in ["Breadth-first — explore widely across the domain, then specialise","Depth-first — go deep on one thing before moving to the next","No preference / depends on the topic"] %}
+            <div class="form-check"><input class="form-check-input" type="radio" name="learning_preference" value="{{ v }}" id="lp{{ loop.index }}"><label class="form-check-label" for="lp{{ loop.index }}">{{ v }}</label></div>
+            {% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Learning formats to avoid (optional)</label>
+            <textarea name="learning_avoid" class="form-control" rows="2" placeholder="e.g. I've abandoned 3 MOOCs — I need a cohort for accountability"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. Network & Visibility -->
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#s7">
+          <span class="num">7</span> Network &amp; Visibility
+        </button>
+      </h2>
+      <div id="s7" class="accordion-collapse collapse">
+        <div class="accordion-body">
+          <div class="mb-3">
+            <label class="form-label">Existing contacts already working in the target domain</label>
+            {% for v in ["None — starting from scratch","1–3 contacts — a thin warm network","4–10 contacts — moderate network","10+ contacts — strong existing network"] %}
+            <div class="form-check"><input class="form-check-input" type="radio" name="network_warmth" value="{{ v }}" id="nw{{ loop.index }}"><label class="form-check-label" for="nw{{ loop.index }}">{{ v }}</label></div>
+            {% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Is your transition confidential?</label>
+            {% for v in ["Yes — my employer and colleagues must not know yet","Partially — close contacts know but not my employer","No — the transition is open; I can post and share publicly"] %}
+            <div class="form-check"><input class="form-check-input" type="radio" name="transition_confidential" value="{{ v }}" id="conf{{ loop.index }}"><label class="form-check-label" for="conf{{ loop.index }}">{{ v }}</label></div>
+            {% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Comfort with public visibility</label>
+            {% for v in ["Very comfortable — already active publicly","Comfortable — willing to start posting","Neutral — open but not enthusiastic","Uncomfortable — prefer to stay low-profile","Not comfortable at all"] %}
+            <div class="form-check"><input class="form-check-input" type="radio" name="visibility_comfort" value="{{ v }}" id="vc{{ loop.index }}"><label class="form-check-label" for="vc{{ loop.index }}">{{ v }}</label></div>
+            {% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Mentor / coach status</label>
+            {% for v in ["I already have a mentor in the target field","I have a general career coach but not a domain mentor","No mentor — I'd like one built into the plan","No mentor and not interested in one"] %}
+            <div class="form-check"><input class="form-check-input" type="radio" name="mentor_status" value="{{ v }}" id="ms{{ loop.index }}"><label class="form-check-label" for="ms{{ loop.index }}">{{ v }}</label></div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. Past Attempts & Blockers -->
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#s8">
+          <span class="num">8</span> Past Attempts &amp; Blockers
+        </button>
+      </h2>
+      <div id="s8" class="accordion-collapse collapse">
+        <div class="accordion-body">
+          <div class="mb-3">
+            <label class="form-label">Have you tried to make this move before? What got in the way?</label>
+            <textarea name="past_attempts" class="form-control" rows="4" placeholder="e.g. Started a sustainability cert 2 years ago but stopped when work got busy"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">What aspects of the transition feel most uncertain or daunting?</label>
+            <textarea name="biggest_fears" class="form-control" rows="4" placeholder="e.g. I worry my age is a disadvantage; I don't know anyone in this world"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. Deliverable Preferences -->
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#s9">
+          <span class="num">9</span> Deliverable Preferences
+        </button>
+      </h2>
+      <div id="s9" class="accordion-collapse collapse">
+        <div class="accordion-body">
+          <div class="mb-3">
+            <label class="form-label">Who will see this plan?</label>
+            {% for v in ["Just me — personal accountability tool","Me and my family / partner","Me and my employer or sponsor (they are funding the transition)","I may share it with potential employers or networks"] %}
+            <div class="form-check"><input class="form-check-input" type="radio" name="plan_audience" value="{{ v }}" id="pa{{ loop.index }}"><label class="form-check-label" for="pa{{ loop.index }}">{{ v }}</label></div>
+            {% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Sections or topics to emphasise (optional)</label>
+            <textarea name="emphasise" class="form-control" rows="3" placeholder="e.g. I want detailed networking scripts; please go deep on certifications"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Background notes / anything to handle with care (optional)</label>
+            <textarea name="background_notes" class="form-control" rows="3" placeholder="e.g. I'm proud of my conflict-affected settings work. Prefer not to highlight the gap in 2019–2020."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10. Document Uploads -->
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#s10">
+          <span class="num">10</span> Document Uploads
+        </button>
+      </h2>
+      <div id="s10" class="accordion-collapse collapse">
+        <div class="accordion-body">
+          <p class="text-muted small">These will be attached to the email sent to your consultant and used to generate your Career Transition Plan.</p>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">CV / Résumé (PDF recommended) *</label>
+              <input type="file" name="cv_file" class="form-control" accept=".pdf,.doc,.docx">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">LinkedIn export or profile summary (optional)</label>
+              <input type="file" name="linkedin_file" class="form-control" accept=".pdf,.txt">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Target job description (TXT or PDF)</label>
+              <input type="file" name="jd_file" class="form-control" accept=".pdf,.txt">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Existing learning plan (optional)</label>
+              <input type="file" name="learning_plan_file" class="form-control" accept=".pdf,.txt,.docx">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Professional headshot (optional)</label>
+              <input type="file" name="headshot_file" class="form-control" accept=".jpg,.jpeg,.png">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 11. Email Settings -->
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#s11">
+          <span class="num">11</span> Email Settings
+        </button>
+      </h2>
+      <div id="s11" class="accordion-collapse collapse">
+        <div class="accordion-body">
+          {% if smtp_user %}
+          <div class="alert alert-info py-2">SMTP credentials loaded from environment. Sending from <strong>{{ smtp_user }}</strong> → <strong>{{ recipient }}</strong>.</div>
+          {% else %}
+          <p class="text-muted small">Enter your Gmail SMTP credentials to email the intake PDF to <strong>{{ recipient }}</strong>. Use a <a href="https://myaccount.google.com/apppasswords" target="_blank">Gmail App Password</a>, not your login password. Leave blank to skip email and download the PDF only.</p>
+          {% endif %}
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="send_email_flag" id="send_email_flag" {% if smtp_user %}checked{% endif %}>
+              <label class="form-check-label" for="send_email_flag">Send intake PDF (and uploaded documents) to {{ recipient }}</label>
+            </div>
+          </div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Gmail address (sender)</label>
+              <input type="email" name="smtp_user" class="form-control" value="{{ smtp_user }}" placeholder="you@gmail.com">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Gmail App Password</label>
+              <input type="password" name="smtp_password" class="form-control" placeholder="xxxx xxxx xxxx xxxx">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /accordion -->
+
+  <hr class="my-4">
+  <div id="status" class="alert d-none mb-3" role="alert"></div>
+  <button type="submit" id="submit-btn" class="btn btn-submit btn-primary btn-lg w-100 text-white">
+    Submit Onboarding Form
+  </button>
+  <div id="pdf-link" class="mt-3 d-none text-center">
+    <a id="pdf-anchor" href="#" class="btn btn-outline-success">Download your intake PDF again</a>
+  </div>
+
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Hours slider display
+  const range = document.getElementById('hrs-range');
+  const val   = document.getElementById('hrs-val');
+  range.addEventListener('input', () => val.textContent = range.value);
+
+  // Form submit via fetch → PDF download
+  document.getElementById('form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn    = document.getElementById('submit-btn');
+    const status = document.getElementById('status');
+
+    btn.disabled = true;
+    btn.textContent = 'Processing…';
+    status.className = 'alert alert-info';
+    status.textContent = 'Generating your PDF…';
+    status.classList.remove('d-none');
+
+    try {
+      const res = await fetch('/submit', { method: 'POST', body: new FormData(this) });
+      if (res.ok) {
+        const blob = await res.blob();
+        const cd   = res.headers.get('content-disposition') || '';
+        const m    = cd.match(/filename="?([^"]+)"?/);
+        const name = m ? m[1] : 'intake.pdf';
+
+        const url  = URL.createObjectURL(blob);
+        const a    = document.getElementById('pdf-anchor');
+        a.href     = url;
+        a.download = name;
+        document.getElementById('pdf-link').classList.remove('d-none');
+
+        const tmp = document.createElement('a');
+        tmp.href = url; tmp.download = name;
+        document.body.appendChild(tmp); tmp.click(); document.body.removeChild(tmp);
+
+        status.className = 'alert alert-success';
+        status.textContent = 'PDF generated successfully — your download should start automatically.';
+      } else {
+        const txt = await res.text();
+        status.className = 'alert alert-danger';
+        status.textContent = 'Error: ' + txt;
+      }
+    } catch (err) {
+      status.className = 'alert alert-danger';
+      status.textContent = 'Network error: ' + err.message;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Submit Onboarding Form';
+    }
+  });
+</script>
+</body>
+</html>
