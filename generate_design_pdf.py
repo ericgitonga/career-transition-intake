@@ -36,8 +36,42 @@ INNER_W = W - 2 * MARGIN
 # ── Styles ────────────────────────────────────────────────────────────────────
 
 def styles():
-    """Return the paragraph style dictionary for the document."""
+    """Build and return all named paragraph styles used throughout the document.
+
+    Centralising styles here prevents scattered ParagraphStyle definitions
+    across layout functions and makes typography changes straightforward.
+    The inner helper ``S`` is a shorthand so each style fits on one line.
+
+    Returns:
+        A dictionary mapping short string keys to ParagraphStyle instances:
+          - ``"title"``    — large white centred title for the cover block.
+          - ``"subtitle"`` — gold centred sub-title for the cover block.
+          - ``"meta"``     — small grey centred metadata (author, date).
+          - ``"h2"``       — navy bold heading for major sub-topics.
+          - ``"h3"``       — teal bold heading for sub-section labels.
+          - ``"body"``     — justified body text for descriptive paragraphs.
+          - ``"bullet"``   — indented body text for bullet-point lists.
+          - ``"code"``     — monospaced Courier for inline code snippets.
+          - ``"note"``     — small oblique grey text for caveats and asides.
+          - ``"bold"``     — teal bold text for summary/emphasis lines.
+          - ``"label"``    — navy bold for field-label style text in tables.
+          - ``"cell"``     — standard Helvetica for table body cells.
+          - ``"cell_bold"``— bold Helvetica for emphasised table body cells.
+          - ``"th"``       — white bold for table header cells (navy background).
+          - ``"good"``     — green bold for positive outcome cells (✓ rows).
+          - ``"bad"``      — red bold for negative outcome cells (✗ rows).
+          - ``"total"``    — navy bold for cost-summary totals.
+    """
     def S(name, **kw):
+        """Shorthand constructor that forwards keyword arguments to ParagraphStyle.
+
+        Args:
+            name: Internal style name (must be unique within a ReportLab document).
+            **kw: Any keyword arguments accepted by ParagraphStyle.
+
+        Returns:
+            A configured ParagraphStyle instance.
+        """
         return ParagraphStyle(name, **kw)
 
     return {
@@ -81,13 +115,42 @@ def styles():
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def rule(color=GOLD, thickness=1, before=6, after=8):
-    """Return a styled horizontal rule flowable."""
+    """Create a horizontal rule flowable for visual separation between sections.
+
+    Used in two roles: a thick gold rule immediately after the cover block
+    to anchor the document's brand identity, and thin grey rules between
+    numbered sections to provide breathing room without heavy visual weight.
+
+    Args:
+        color:     ReportLab color for the rule line. Defaults to GOLD.
+        thickness: Line thickness in points. Defaults to 1.
+        before:    Vertical space in points above the rule. Defaults to 6.
+        after:     Vertical space in points below the rule. Defaults to 8.
+
+    Returns:
+        A ReportLab HRFlowable spanning the full content width (100%).
+    """
     return HRFlowable(width="100%", thickness=thickness, color=color,
                       spaceBefore=before, spaceAfter=after)
 
 
 def section_header(text, s):
-    """Return a full-width navy banner for major document sections."""
+    """Create a full-width navy banner that opens each numbered document section.
+
+    The banner matches the visual language used in the intake PDF itself,
+    reinforcing the brand identity within the report. Text is rendered in
+    bold white on a navy background spanning the full content width (INNER_W).
+
+    Args:
+        text: The section title to display, including its number prefix
+              (e.g. "1. Executive Summary"). Supports basic HTML tags.
+        s:    The styles dictionary returned by ``styles()``. Accepted for
+              API consistency with other helpers, though this function
+              defines its own inline ``"sh"`` style.
+
+    Returns:
+        A ReportLab Table flowable styled as a full-width navy banner.
+    """
     p = Paragraph(text, ParagraphStyle(
         "sh", fontName="Helvetica-Bold", fontSize=11,
         textColor=WHITE, leading=14))
@@ -103,7 +166,24 @@ def section_header(text, s):
 
 
 def sub_header(text, s):
-    """Return a teal-left-border sub-section label."""
+    """Create a teal-accented sub-section label for platform phases and architecture topics.
+
+    Visually lighter than ``section_header`` — a light grey background with a
+    3-point teal left border — so it nests clearly within a numbered section
+    without competing with the navy section banner above it.
+
+    Used to introduce each platform phase in Section 3 (e.g. "Phase 1 — Hugging
+    Face Spaces") and each architecture layer in Section 4 (e.g. "Backend —
+    Flask + Gunicorn").
+
+    Args:
+        text: The sub-section label text. Supports basic HTML tags.
+        s:    The styles dictionary returned by ``styles()``. Accepted for
+              API consistency; this function defines its own inline ``"ssh"`` style.
+
+    Returns:
+        A ReportLab Table flowable with a teal left border and light background.
+    """
     p = Paragraph(text, ParagraphStyle(
         "ssh", fontName="Helvetica-Bold", fontSize=10,
         textColor=TEAL, leading=14))
@@ -120,7 +200,34 @@ def sub_header(text, s):
 
 
 def phase_table(rows, s, col_widths=None):
-    """Return a styled data table for the platform decision or cost sections."""
+    """Build a styled data table with a navy header row and alternating body rows.
+
+    Used for three distinct tables in the document:
+      - Platform comparison summary (Section 3): outcome cells containing ✓ or ✗
+        are automatically coloured green or red respectively.
+      - Effort breakdown by phase (Section 7): phase name, description, hours.
+      - Cost analysis tables (Section 8): discipline, rate, hours, subtotal.
+
+    The first element of ``rows`` is treated as the header row and rendered with
+    white bold text on a navy background. Subsequent rows alternate between two
+    light grey shades for readability. The table repeats the header row on page
+    breaks (``repeatRows=1``).
+
+    Cells whose string value starts with "✓" are rendered in green bold; cells
+    starting with "✗" are rendered in red bold. All other cells use the standard
+    ``"cell"`` style.
+
+    Args:
+        rows:       List of lists where the first list is column headers and the
+                    remaining lists are data rows. All values are converted to
+                    strings via ``str()``.
+        s:          The styles dictionary returned by ``styles()``.
+        col_widths: Optional list of column widths in points that must sum to
+                    INNER_W. If None, a single column spanning INNER_W is used.
+
+    Returns:
+        A fully styled ReportLab Table flowable.
+    """
     if col_widths is None:
         col_widths = [INNER_W]
     header, *data = rows
@@ -148,19 +255,80 @@ def phase_table(rows, s, col_widths=None):
 
 
 def b(text):
-    """Wrap text in bold HTML tags for inline use in Paragraph strings."""
+    """Wrap a string in ReportLab-compatible bold HTML tags.
+
+    ReportLab's Paragraph renderer supports a limited subset of HTML inline
+    tags. This helper avoids repeating the ``<b>...</b>`` pattern when
+    bolding sub-headings or key terms inline within a Paragraph string,
+    keeping call sites readable.
+
+    Args:
+        text: The plain string to wrap.
+
+    Returns:
+        The string enclosed in ``<b>`` and ``</b>`` tags.
+    """
     return f"<b>{text}</b>"
 
 
 def bullet(text, s):
-    """Return a single indented bullet-point Paragraph."""
+    """Create a single indented bullet-point Paragraph.
+
+    Prepends a unicode bullet character and applies the ``"bullet"`` style,
+    which adds a left indent so the text aligns neatly after the bullet.
+    Supports inline HTML tags (e.g. ``<b>``, ``<i>``) within ``text``.
+
+    Args:
+        text: The bullet item content. May contain inline HTML markup.
+        s:    The styles dictionary returned by ``styles()``.
+
+    Returns:
+        A ReportLab Paragraph flowable with a bullet prefix and left indent.
+    """
     return Paragraph(f"• {text}", s["bullet"])
 
 
 # ── Document body ─────────────────────────────────────────────────────────────
 
 def build_story(s):
-    """Assemble all flowables for the design process document."""
+    """Assemble the complete ordered list of ReportLab flowables for the document.
+
+    Constructs the full narrative of the design process report in nine numbered
+    sections, preceded by a navy cover block:
+
+      Cover    — Title, subtitle, author, date on a full-width navy block.
+      Section 1 — Executive Summary: one-paragraph overview of the project
+                  and its final architecture.
+      Section 2 — Project Brief & Objectives: the original requirements and
+                  a bulleted list of key deliverable criteria.
+      Section 3 — Platform Selection Journey: four sub-sections covering each
+                  platform evaluated (Hugging Face Spaces, Google Cloud Run,
+                  Render + Gradio, Render + Flask), their issues, the decision
+                  rationale for each, and a summary comparison table.
+      Section 4 — Technical Architecture: sub-sections for Flask + Gunicorn,
+                  ReportLab PDF generation, Resend email delivery, and Render hosting.
+      Section 5 — UI/UX Design: colour palette, form structure (10-section accordion),
+                  and the AJAX submission and download flow.
+      Section 6 — Key Design Decisions: six named architectural choices with
+                  the reasoning behind each.
+      Section 7 — Development Phases & Effort Breakdown: a 16-row phase table
+                  with estimated hours per phase and a total effort summary.
+      Section 8 — Cost Analysis: Nairobi market rates, global market rates,
+                  and a four-row summary table spanning both markets and agency pricing.
+      Section 9 — Final Deliverable: enumerated list of all repository artefacts
+                  and the live service URL.
+
+    Each major section is preceded by a navy ``section_header`` banner and followed
+    by a thin grey ``rule``. Page breaks are inserted before Sections 4 and 7 to
+    prevent awkward splits at those content boundaries.
+
+    Args:
+        s: The styles dictionary returned by ``styles()``.
+
+    Returns:
+        A list of ReportLab flowables suitable for passing directly to
+        ``SimpleDocTemplate.build()``.
+    """
     story = []
 
     # ── Cover ─────────────────────────────────────────────────────────────────
@@ -682,7 +850,18 @@ def build_story(s):
 # ── Document builder ──────────────────────────────────────────────────────────
 
 def make_doc():
-    """Build and write the design process PDF to Clients/design_process.pdf."""
+    """Orchestrate the full PDF build pipeline and write the output file.
+
+    Calls ``styles()`` to obtain the shared style dictionary, constructs a
+    ``SimpleDocTemplate`` configured for A4 with standard margins, defines a
+    ``footer`` callback for per-page annotation, calls ``build_story()`` to
+    obtain the complete flowable list, and builds the document. Prints the
+    output path to stdout on completion.
+
+    The output is written to ``OUTPUT_PATH`` (``Clients/design_process.pdf``
+    relative to this script's directory). The ``Clients/`` directory is
+    git-ignored, keeping client-facing documents out of version control.
+    """
     s = styles()
     doc = SimpleDocTemplate(
         OUTPUT_PATH, pagesize=A4,
@@ -691,7 +870,17 @@ def make_doc():
     )
 
     def footer(canvas, doc):
-        """Draw page number and document title at the bottom of every page."""
+        """Draw a two-part footer at the bottom of each page of the PDF.
+
+        Called by ReportLab's build pipeline via ``onFirstPage`` and
+        ``onLaterPages``. Renders the document title flush-left and the
+        current page number flush-right, both in 8pt grey Helvetica,
+        positioned 0.7 cm from the bottom edge of the page.
+
+        Args:
+            canvas: The ReportLab canvas for the current page.
+            doc:    The SimpleDocTemplate being built (provides ``doc.page``).
+        """
         canvas.saveState()
         canvas.setFont("Helvetica", 8)
         canvas.setFillColor(colors.HexColor("#888888"))
