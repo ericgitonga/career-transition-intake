@@ -186,9 +186,7 @@ def send_email(pdf_path, data, upload_paths):
 
 @app.route("/")
 def index():
-    return render_template("index.html",
-                           email_configured=bool(os.environ.get("RESEND_API_KEY")),
-                           recipient=RECIPIENT)
+    return render_template("index.html", recipient=RECIPIENT)
 
 
 @app.route("/submit", methods=["POST"])
@@ -253,7 +251,7 @@ def submit():
             uploads.append(tmp.name)
 
     email_status = "skipped"
-    if request.form.get("send_email_flag") == "on" and os.environ.get("RESEND_API_KEY"):
+    if os.environ.get("RESEND_API_KEY"):
         try:
             send_email(pdf_path, data, uploads)
             email_status = "sent"

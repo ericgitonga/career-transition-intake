@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,22 +7,46 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     :root { --navy:#1B2A4A; --teal:#0E7C7B; --gold:#C9A84C; }
-    body { background:#f4f6f9; font-size:.95rem; }
+    body { background:#0d1117; color:#e6edf3; font-size:.95rem; }
+
     .form-header { background:var(--navy); color:#fff; padding:2rem; border-radius:.5rem; margin-bottom:1.5rem; }
     .form-header h1 { color:#fff; font-size:1.6rem; margin-bottom:.25rem; }
     .form-header p  { color:var(--gold); margin:0; }
-    .accordion-button { font-weight:600; color:var(--navy); }
+
+    .accordion-item  { background:#161b22; border-color:#30363d; }
+    .accordion-body  { background:#161b22; }
+    .accordion-button { font-weight:600; color:#e6edf3; background:#1e2533; }
     .accordion-button:not(.collapsed) { background:var(--navy); color:#fff; box-shadow:none; }
     .accordion-button:not(.collapsed)::after { filter:invert(1); }
+    .accordion-button.collapsed::after    { filter:invert(1) brightness(.7); }
     .accordion-button:focus { box-shadow:none; }
+
     .num { background:var(--gold); color:#fff; border-radius:50%;
            width:22px; height:22px; display:inline-flex; align-items:center;
            justify-content:center; font-size:.72rem; font-weight:700; margin-right:8px; flex-shrink:0; }
+
+    .form-label { font-weight:600; color:var(--gold); margin-bottom:.3rem; }
+    .form-text  { color:#8b949e; }
+    .range-val  { font-weight:700; color:var(--teal); }
+    .text-muted { color:#8b949e !important; }
+
+    .form-control, .form-select {
+      background:#0d1117; border-color:#30363d; color:#e6edf3;
+    }
+    .form-control:focus, .form-select:focus {
+      background:#0d1117; border-color:var(--teal); color:#e6edf3;
+      box-shadow:0 0 0 .2rem rgba(14,124,123,.25);
+    }
+    .form-control::placeholder { color:#6e7681; }
+
+    .form-check-input { background-color:#0d1117; border-color:#30363d; }
+    .form-check-input:checked { background-color:var(--teal); border-color:var(--teal); }
+    .form-check-label { color:#e6edf3; }
+
     .btn-submit { background:var(--teal); border-color:var(--teal); font-size:1.05rem; }
     .btn-submit:hover { background:var(--navy); border-color:var(--navy); }
-    .form-label { font-weight:600; color:var(--navy); margin-bottom:.3rem; }
-    .form-text  { color:#666; }
-    .range-val  { font-weight:700; color:var(--teal); }
+
+    hr { border-color:#30363d; }
   </style>
 </head>
 <body>
@@ -369,32 +393,6 @@
       </div>
     </div>
 
-    <!-- 11. Email Settings -->
-    <div class="accordion-item">
-      <h2 class="accordion-header">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#s11">
-          <span class="num">11</span> Email Settings
-        </button>
-      </h2>
-      <div id="s11" class="accordion-collapse collapse">
-        <div class="accordion-body">
-          {% if email_configured %}
-          <div class="alert alert-success py-2 mb-3">
-            Your completed intake PDF will be emailed automatically to <strong>{{ recipient }}</strong>.
-          </div>
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="send_email_flag" id="send_email_flag" checked>
-            <label class="form-check-label" for="send_email_flag">Send intake PDF (and uploaded documents) to {{ recipient }}</label>
-          </div>
-          {% else %}
-          <div class="alert alert-warning py-2">
-            Email delivery is not configured on this server. Your PDF will be available to download only.
-          </div>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-
   </div><!-- /accordion -->
 
   <hr class="my-4">
@@ -447,11 +445,13 @@
         document.body.appendChild(tmp); tmp.click(); document.body.removeChild(tmp);
 
         const emailStatus = res.headers.get('x-email-status');
-        let emailNote = '';
-        if (emailStatus === 'sent')   emailNote = ' Email sent to consultant.';
-        if (emailStatus === 'failed') emailNote = ' (Email delivery failed — check your App Password and try again.)';
+        let emailNote = emailStatus === 'sent'
+          ? ' A copy has been emailed to your consultant.'
+          : emailStatus === 'failed'
+          ? ' (Email delivery failed — please contact your consultant directly.)'
+          : '';
         status.className = 'alert alert-success';
-        status.textContent = 'PDF generated successfully — your download should start automatically.' + emailNote;
+        status.textContent = 'Your intake form has been submitted. Your PDF is downloading now.' + emailNote;
       } else {
         const txt = await res.text();
         status.className = 'alert alert-danger';
