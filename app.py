@@ -27,6 +27,16 @@ WHITE = colors.white
 BLACK = colors.HexColor("#1A1A1A")
 
 def _S(name, **kw):
+    """Shorthand constructor for a ReportLab ParagraphStyle.
+
+    Args:
+        name: Internal style name used by ReportLab (must be unique per document).
+        **kw: Any keyword arguments accepted by ParagraphStyle (fontSize, textColor,
+              fontName, leading, alignment, leftIndent, etc.).
+
+    Returns:
+        A configured ParagraphStyle instance.
+    """
     return ParagraphStyle(name, **kw)
 
 _h1    = _S("H1",  fontSize=16, textColor=WHITE, fontName="Helvetica-Bold", leading=20)
@@ -39,6 +49,18 @@ _cn    = _S("CN",  fontSize=18,  textColor=WHITE, fontName="Helvetica-Bold", lea
 
 
 def _banner(text):
+    """Create a navy-background section-header banner for the PDF.
+
+    Used to visually separate each of the nine intake sections in the
+    generated document. The banner spans the full content width (17 cm)
+    and renders the text in bold white using the _h1 paragraph style.
+
+    Args:
+        text: The section title to display (e.g. "Section 1 — Personal Information").
+
+    Returns:
+        A ReportLab Table flowable styled as a full-width navy banner.
+    """
     t = Table([[Paragraph(text, _h1)]], colWidths=[17 * cm])
     t.setStyle(TableStyle([
         ("BACKGROUND",    (0, 0), (-1, -1), NAVY),
@@ -50,11 +72,51 @@ def _banner(text):
 
 
 def _qa(question, value):
+    """Render a question/answer pair as a list of PDF flowables.
+
+    Formats multi-select answers (lists) as a comma-separated string.
+    Blank or None answers are replaced with an em-dash so the PDF never
+    shows an empty field.
+
+    Args:
+        question: The field label to display in bold navy (e.g. "Full name").
+        value:    The client's answer — either a plain string/None, or a list
+                  of strings for checkbox fields.
+
+    Returns:
+        A list of three flowables: the question Paragraph, the answer
+        Paragraph (indented), and a small vertical Spacer.
+    """
     text = ", ".join(value) if isinstance(value, list) else str(value or "—").strip() or "—"
     return [Paragraph(question, _label), Paragraph(text, _ans), Spacer(1, 4)]
 
 
 def build_pdf(d, path):
+    """Generate the branded intake PDF from the submitted form data.
+
+    Builds a multi-page A4 document using ReportLab's Platypus layout engine.
+    The document contains:
+      - A navy cover block with the client's name and submission date.
+      - Nine labelled sections (Personal Information through Deliverable
+        Preferences), each opened by a navy banner and closed by a divider rule.
+      - A footer on every page showing the client's name and page number.
+
+    The function defines a nested ``footer`` callback that ReportLab calls on
+    each page via ``onFirstPage`` / ``onLaterPages``.
+
+    Args:
+        d:    Dictionary of form field values keyed by field name (as returned
+              by the ``submit`` route). Multi-select fields are lists; all
+              other fields are strings or None.
+        path: Absolute filesystem path where the PDF should be written.
+
+    Returns:
+        The same ``path`` string passed in, for chaining convenience.
+
+    Raises:
+        Any ReportLab exception if layout or rendering fails (propagated to
+        the caller without wrapping).
+    """
     doc = SimpleDocTemplate(
         path, pagesize=A4,
         leftMargin=1.27*cm, rightMargin=1.27*cm,
@@ -62,6 +124,16 @@ def build_pdf(d, path):
     )
 
     def footer(canvas, doc):
+        """Draw the page footer on each page of the PDF.
+
+        Called by ReportLab's build pipeline for every page. Renders a centred
+        grey caption at the bottom of the page containing the service name,
+        the client's full name, and the current page number.
+
+        Args:
+            canvas: The ReportLab canvas for the current page.
+            doc:    The SimpleDocTemplate being built (provides ``doc.page``).
+        """
         canvas.saveState()
         canvas.setFont("Helvetica", 8)
         canvas.setFillColor(MGRY)
@@ -156,6 +228,31 @@ def build_pdf(d, path):
 
 
 def send_email(pdf_path, data, upload_paths):
+    """Send the intake PDF and any uploaded documents to the consultant via Resend.
+
+    Uses the Resend HTTP API (not SMTP) so the call succeeds on hosting
+    providers that block outbound port 587. The API key is read from the
+    ``RESEND_API_KEY`` environment variable at call time. The sender address
+    defaults to ``onboarding@resend.dev`` (Resend's shared domain, no DNS
+    setup required) and can be overridden by setting a ``FROM_EMAIL``
+    environment variable to a verified custom-domain address.
+
+    Each file — the generated PDF plus every uploaded document — is read into
+    memory and passed to Resend as a list of byte integers, which is the format
+    the Resend Python SDK expects for attachments.
+
+    Args:
+        pdf_path:     Absolute path to the generated intake PDF.
+        data:         Dictionary of form field values (used to populate the
+                      plain-text email body and subject line).
+        upload_paths: List of absolute paths to client-uploaded documents.
+                      May be empty if the client did not attach any files.
+
+    Raises:
+        KeyError:  If ``RESEND_API_KEY`` is not set in the environment.
+        Exception: Any network or API error raised by the Resend SDK
+                   (propagated to the caller, which sets email_status="failed").
+    """
     resend.api_key = os.environ["RESEND_API_KEY"]
     n_docs = len(upload_paths)
     body = (
@@ -186,11 +283,46 @@ def send_email(pdf_path, data, upload_paths):
 
 @app.route("/")
 def index():
+    """Serve the onboarding intake form.
+
+    Renders ``templates/index.html`` with the consultant's recipient address
+    injected so the template can display it in the UI.
+
+    Returns:
+        A Flask Response containing the rendered HTML form (HTTP 200).
+    """
     return render_template("index.html", recipient=RECIPIENT)
 
 
 @app.route("/submit", methods=["POST"])
 def submit():
+    """Process a submitted intake form: generate a PDF, email it, and return it for download.
+
+    Workflow:
+      1. Validate that ``full_name`` is present; return HTTP 400 otherwise.
+      2. Collect all form fields into a flat dictionary.
+      3. Build the branded intake PDF and write it to the system temp directory.
+         The filename uses the client's initials and a timestamp
+         (e.g. ``JWM_intake_20260710_1430.pdf``).
+      4. Save any uploaded files (CV, LinkedIn export, job description, learning
+         plan, and additional documents) to temp files.
+      5. If ``RESEND_API_KEY`` is present in the environment, attempt to email
+         the PDF and all uploads to the consultant. The outcome is recorded as
+         ``sent``, ``failed``, or ``skipped`` and returned in the
+         ``X-Email-Status`` response header so the browser can surface a
+         meaningful status message without blocking the download.
+      6. Stream the PDF back to the client as a file download attachment.
+
+    Returns:
+        A Flask Response that streams the PDF for download (HTTP 200) with an
+        ``X-Email-Status`` header set to one of:
+          - ``"sent"``    — email delivered successfully.
+          - ``"failed"``  — email attempted but an exception was raised.
+          - ``"skipped"`` — ``RESEND_API_KEY`` not configured; email not attempted.
+
+    Returns HTTP 400 if ``full_name`` is missing.
+    Returns HTTP 500 if PDF generation raises an exception.
+    """
     full_name = request.form.get("full_name", "").strip()
     if not full_name:
         return "Please enter your full name.", 400

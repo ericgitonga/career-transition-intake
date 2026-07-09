@@ -24,6 +24,21 @@ INNER_W = W - 2 * MARGIN
 
 
 def styles():
+    """Build and return the named paragraph styles used throughout the PDF.
+
+    Centralising styles here avoids scattering ParagraphStyle calls across
+    the layout functions and makes it easy to adjust typography in one place.
+
+    Returns:
+        A dictionary mapping short style keys to ParagraphStyle instances:
+          - ``"h1"``   — large navy title for the document heading.
+          - ``"h3"``   — teal sub-heading for numbered setup steps.
+          - ``"body"`` — justified body text for descriptive paragraphs.
+          - ``"step"`` — indented body text for bullet-point instructions.
+          - ``"code"`` — monospaced Courier style for shell commands.
+          - ``"note"`` — small oblique grey text for caveats and asides.
+          - ``"bold"`` — teal bold text for emphasis lines.
+    """
     return {
         "h1":   ParagraphStyle("h1",   fontName="Helvetica-Bold",   fontSize=18,
                                textColor=NAVY,  leading=24, spaceAfter=6),
@@ -44,11 +59,36 @@ def styles():
 
 
 def rule(color=GOLD, thickness=1, before=6, after=8):
+    """Create a horizontal rule flowable for visual separation between sections.
+
+    Args:
+        color:     ReportLab color for the rule line. Defaults to GOLD.
+        thickness: Line thickness in points. Defaults to 1.
+        before:    Vertical space in points to insert above the rule. Defaults to 6.
+        after:     Vertical space in points to insert below the rule. Defaults to 8.
+
+    Returns:
+        A ReportLab HRFlowable spanning the full content width.
+    """
     return HRFlowable(width="100%", thickness=thickness, color=color,
                       spaceBefore=before, spaceAfter=after)
 
 
 def code_block(text, s):
+    """Render a shell command or code snippet in a styled monospaced block.
+
+    Wraps the text in a single-cell Table with a light grey background and
+    a subtle border, visually distinguishing it from surrounding body text.
+    Leading and trailing whitespace is stripped before rendering.
+
+    Args:
+        text: The command or code string to display (e.g. "git push origin main").
+        s:    The styles dictionary returned by ``styles()``. The ``"code"``
+              entry is used for the Preformatted paragraph inside the block.
+
+    Returns:
+        A ReportLab Table flowable styled as a code block spanning INNER_W.
+    """
     from reportlab.platypus import Table, TableStyle
     t = Table([[Preformatted(text.strip(), s["code"])]], colWidths=[INNER_W])
     t.setStyle(TableStyle([
@@ -63,6 +103,20 @@ def code_block(text, s):
 
 
 def section_header(text, s):
+    """Create a full-width navy banner used to open each document section.
+
+    Matches the visual language of the intake PDF's section banners so the
+    hosting guide feels part of the same design system. The text is rendered
+    in bold white on a navy background.
+
+    Args:
+        text: The section title to display (e.g. "One-Time Setup").
+        s:    The styles dictionary returned by ``styles()`` (accepted for
+              API consistency, though this function defines its own inline style).
+
+    Returns:
+        A ReportLab Table flowable styled as a full-width navy section header.
+    """
     from reportlab.platypus import Table, TableStyle
     p = Paragraph(text, ParagraphStyle("sh", fontName="Helvetica-Bold", fontSize=11,
                                         textColor=colors.white, leading=14))
@@ -78,6 +132,29 @@ def section_header(text, s):
 
 
 def build_story(s):
+    """Assemble the full list of ReportLab flowables that make up the PDF body.
+
+    Constructs the document narrative in four logical sections:
+      1. Introduction — overview of the stack and deployment model.
+      2. One-Time Setup — five numbered steps covering Render account creation,
+         GitHub connection, web service configuration, Resend sign-up, and
+         API key injection.
+      3. How It Works — client-facing UX description and sender address notes.
+      4. Deploying Updates — the single ``git push`` workflow.
+      5. After Deployment — permanent URL, free-tier spin-down behaviour, and
+         API key rotation procedure.
+
+    Each major section opens with a ``section_header`` banner and closes with
+    a light grey rule. Numbered sub-steps use the ``"step"`` style with a
+    bullet prefix.
+
+    Args:
+        s: The styles dictionary returned by ``styles()``.
+
+    Returns:
+        A list of ReportLab flowables ready to be passed to
+        ``SimpleDocTemplate.build()``.
+    """
     story = []
 
     story.append(Paragraph("Hosting the Career Transition Intake Form on Render", s["h1"]))
@@ -249,6 +326,20 @@ def build_story(s):
 
 
 def make_doc():
+    """Build the complete hosting guide PDF and write it to ``OUTPUT_PATH``.
+
+    Orchestrates the full generation pipeline:
+      1. Calls ``styles()`` to obtain the shared paragraph style dictionary.
+      2. Creates a ``SimpleDocTemplate`` configured for A4 with standard margins.
+      3. Defines a ``footer`` callback that ReportLab invokes on every page to
+         render a centred grey caption with the service name and page number.
+      4. Calls ``build_story()`` to obtain the flowable list.
+      5. Builds the document, applying the footer on every page.
+      6. Prints the output path to stdout on success.
+
+    The output file is written to the same directory as this script
+    (``hosting.pdf``), as defined by ``OUTPUT_PATH``.
+    """
     s = styles()
     doc = SimpleDocTemplate(
         OUTPUT_PATH, pagesize=A4,
@@ -257,6 +348,16 @@ def make_doc():
     )
 
     def footer(canvas, doc):
+        """Draw a centred page-number caption at the bottom of each page.
+
+        Called by ReportLab's build pipeline via ``onFirstPage`` and
+        ``onLaterPages``. Renders grey 8pt text showing the service name
+        and the current page number.
+
+        Args:
+            canvas: The ReportLab canvas for the current page.
+            doc:    The SimpleDocTemplate being built (provides ``doc.page``).
+        """
         canvas.saveState()
         canvas.setFont("Helvetica", 8)
         canvas.setFillColor(colors.HexColor("#888888"))
