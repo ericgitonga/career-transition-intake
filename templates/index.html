@@ -378,39 +378,19 @@
       </h2>
       <div id="s11" class="accordion-collapse collapse">
         <div class="accordion-body">
-          {% if smtp_user %}
-          <div class="alert alert-info py-2">SMTP credentials loaded from environment. Sending from <strong>{{ smtp_user }}</strong> → <strong>{{ recipient }}</strong>.</div>
+          {% if email_configured %}
+          <div class="alert alert-success py-2 mb-3">
+            Your completed intake PDF will be emailed automatically to <strong>{{ recipient }}</strong>.
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="send_email_flag" id="send_email_flag" checked>
+            <label class="form-check-label" for="send_email_flag">Send intake PDF (and uploaded documents) to {{ recipient }}</label>
+          </div>
           {% else %}
-          <p class="text-muted small mb-2">Enter your Gmail credentials to email the intake PDF to <strong>{{ recipient }}</strong>. You must use a <strong>Gmail App Password</strong> — your normal login password will not work. Leave blank to skip email and download the PDF only.</p>
-          <details class="mb-3">
-            <summary class="small fw-semibold" style="cursor:pointer;color:var(--teal);">How to create a Gmail App Password</summary>
-            <ol class="small mt-2 mb-0 ps-3" style="line-height:1.8;">
-              <li>Open <a href="https://myaccount.google.com/security" target="_blank" rel="noopener">Google Account → Security</a>.</li>
-              <li>Under <em>How you sign in to Google</em>, ensure <strong>2-Step Verification</strong> is turned on. (App Passwords are only available when 2FA is active.)</li>
-              <li>In the search bar at the top of that page type <strong>App passwords</strong> and open the result.</li>
-              <li>Under <em>App name</em> type something like <kbd>Career Transition Form</kbd>, then click <strong>Create</strong>.</li>
-              <li>Google displays a 16-character password (e.g. <kbd>abcd efgh ijkl mnop</kbd>). Copy it — it is shown only once.</li>
-              <li>Paste it into the <em>Gmail App Password</em> field below (spaces are fine).</li>
-            </ol>
-            <p class="small mt-2 mb-0 text-muted">Note: if you do not see the <em>App passwords</em> option, your account may be managed by a Google Workspace admin who has disabled it.</p>
-          </details>
+          <div class="alert alert-warning py-2">
+            Email delivery is not configured on this server. Your PDF will be available to download only.
+          </div>
           {% endif %}
-          <div class="mb-3">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" name="send_email_flag" id="send_email_flag" {% if smtp_user %}checked{% endif %}>
-              <label class="form-check-label" for="send_email_flag">Send intake PDF (and uploaded documents) to {{ recipient }}</label>
-            </div>
-          </div>
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label class="form-label">Gmail address (sender)</label>
-              <input type="email" name="smtp_user" class="form-control" value="{{ smtp_user }}" placeholder="you@gmail.com">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Gmail App Password</label>
-              <input type="password" name="smtp_password" class="form-control" placeholder="xxxx xxxx xxxx xxxx">
-            </div>
-          </div>
         </div>
       </div>
     </div>

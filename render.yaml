@@ -5,7 +5,5 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
     envVars:
-      - key: SMTP_USER
-        sync: false
-      - key: SMTP_PASSWORD
+      - key: RESEND_API_KEY
         sync: false

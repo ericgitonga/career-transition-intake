@@ -1,12 +1,9 @@
 import os
-import smtplib
 import tempfile
 from datetime import datetime
-from email import encoders
-from email.mime.base import MIMEBase
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from pathlib import Path
+
+import resend
 
 from flask import Flask, request, render_template, send_file
 from reportlab.lib import colors
@@ -158,15 +155,9 @@ def build_pdf(d, path):
     return path
 
 
-def send_email(pdf_path, data, attachments, smtp_user, smtp_password):
-    msg = MIMEMultipart()
-    msg["From"]    = smtp_user
-    msg["To"]      = RECIPIENT
-    msg["Subject"] = (
-        f"Career Transition Intake — {data.get('full_name', 'New Client')} — "
-        f"{datetime.now().strftime('%d %b %Y')}"
-    )
-    n_docs = len(attachments)
+def send_email(pdf_path, data, upload_paths):
+    resend.api_key = os.environ["RESEND_API_KEY"]
+    n_docs = len(upload_paths)
     body = (
         f"New career transition onboarding submission received.\n\n"
         f"Client:   {data.get('full_name', '—')}\n"
@@ -177,27 +168,26 @@ def send_email(pdf_path, data, attachments, smtp_user, smtp_password):
         f"Full intake responses are in the attached PDF."
         + (f"\n{n_docs} supporting document(s) also attached." if n_docs else "")
     )
-    msg.attach(MIMEText(body, "plain"))
-    for fpath in [pdf_path] + attachments:
+    attachments = []
+    for fpath in [pdf_path] + upload_paths:
         if not fpath or not os.path.exists(str(fpath)):
             continue
         with open(fpath, "rb") as f:
-            part = MIMEBase("application", "octet-stream")
-            part.set_payload(f.read())
-        encoders.encode_base64(part)
-        part.add_header("Content-Disposition", f'attachment; filename="{Path(fpath).name}"')
-        msg.attach(part)
-    with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as srv:
-        srv.ehlo()
-        srv.starttls()
-        srv.login(smtp_user, smtp_password)
-        srv.sendmail(smtp_user, RECIPIENT, msg.as_string())
+            attachments.append({"filename": Path(fpath).name, "content": list(f.read())})
+    resend.Emails.send({
+        "from":        os.environ.get("FROM_EMAIL", "onboarding@resend.dev"),
+        "to":          [RECIPIENT],
+        "subject":     (f"Career Transition Intake — {data.get('full_name', 'New Client')} — "
+                        f"{datetime.now().strftime('%d %b %Y')}"),
+        "text":        body,
+        "attachments": attachments,
+    })
 
 
 @app.route("/")
 def index():
     return render_template("index.html",
-                           smtp_user=os.environ.get("SMTP_USER", ""),
+                           email_configured=bool(os.environ.get("RESEND_API_KEY")),
                            recipient=RECIPIENT)
 
 
@@ -263,15 +253,12 @@ def submit():
             uploads.append(tmp.name)
 
     email_status = "skipped"
-    if request.form.get("send_email_flag") == "on":
-        smtp_user = (request.form.get("smtp_user") or os.environ.get("SMTP_USER", "")).strip()
-        smtp_pw   = (request.form.get("smtp_password") or os.environ.get("SMTP_PASSWORD", "")).strip()
-        if smtp_user and smtp_pw:
-            try:
-                send_email(pdf_path, data, uploads, smtp_user, smtp_pw)
-                email_status = "sent"
-            except Exception:
-                email_status = "failed"
+    if request.form.get("send_email_flag") == "on" and os.environ.get("RESEND_API_KEY"):
+        try:
+            send_email(pdf_path, data, uploads)
+            email_status = "sent"
+        except Exception:
+            email_status = "failed"
 
     resp = send_file(pdf_path, as_attachment=True,
                      download_name=pdf_name, mimetype="application/pdf")
