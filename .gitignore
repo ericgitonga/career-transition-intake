@@ -1,9 +1,6 @@
 # Client folders — never commit client data
 Clients/
 
-hosting.pdf
-generate_hosting_pdf.py
-
 # Gradio runtime
 .gradio/
 __pycache__/

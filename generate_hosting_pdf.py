@@ -25,19 +25,21 @@ INNER_W = W - 2 * MARGIN
 
 def styles():
     return {
-        "h1":   ParagraphStyle("h1",   fontName="Helvetica-Bold",    fontSize=18,
+        "h1":   ParagraphStyle("h1",   fontName="Helvetica-Bold",   fontSize=18,
                                textColor=NAVY,  leading=24, spaceAfter=6),
-        "h3":   ParagraphStyle("h3",   fontName="Helvetica-Bold",    fontSize=10.5,
+        "h3":   ParagraphStyle("h3",   fontName="Helvetica-Bold",   fontSize=10.5,
                                textColor=TEAL,  leading=14, spaceBefore=10, spaceAfter=3),
-        "body": ParagraphStyle("body", fontName="Helvetica",          fontSize=9.5,
+        "body": ParagraphStyle("body", fontName="Helvetica",         fontSize=9.5,
                                textColor=BLACK, leading=14, spaceAfter=5, alignment=TA_JUSTIFY),
-        "step": ParagraphStyle("step", fontName="Helvetica",          fontSize=9.5,
+        "step": ParagraphStyle("step", fontName="Helvetica",         fontSize=9.5,
                                textColor=BLACK, leading=14, spaceAfter=4, leftIndent=14),
-        "code": ParagraphStyle("code", fontName="Courier",            fontSize=8.5,
+        "code": ParagraphStyle("code", fontName="Courier",           fontSize=8.5,
                                textColor=BLACK, leading=13, spaceAfter=0,
                                leftIndent=8, rightIndent=8),
-        "note": ParagraphStyle("note", fontName="Helvetica-Oblique",  fontSize=8.5,
+        "note": ParagraphStyle("note", fontName="Helvetica-Oblique", fontSize=8.5,
                                textColor=colors.HexColor("#555555"), leading=12, spaceAfter=6),
+        "bold": ParagraphStyle("bold", fontName="Helvetica-Bold",    fontSize=10,
+                               textColor=TEAL,  leading=14, spaceAfter=8),
     }
 
 
@@ -78,23 +80,24 @@ def section_header(text, s):
 def build_story(s):
     story = []
 
-    story.append(Paragraph("Hosting the Onboarding Form on Render", s["h1"]))
+    story.append(Paragraph("Hosting the Career Transition Intake Form on Render", s["h1"]))
     story.append(rule(color=GOLD, thickness=1.5, before=2, after=10))
     story.append(Paragraph(
-        "Render hosts the Gradio app as a Python web service on a permanent public URL. "
-        "The free tier is sufficient for a low-traffic client intake form. "
+        "The intake form is a Flask web application hosted on Render as a Python web service. "
+        "It collects structured client responses across 10 sections, generates PDF, "
+        "and emails it automatically to the consultant via Resend — no SMTP configuration "
+        "or credentials are shown to clients. "
         "Render watches the GitHub repo (<b>ericgitonga/career-transition-intake</b>) and "
-        "redeploys automatically on every push to <b>main</b> — no CI/CD workflow required.",
+        "redeploys automatically on every push to <b>main</b>.",
         s["body"],
     ))
     story.append(Paragraph(
-        "<b>After one-time setup, deploying means pushing to GitHub. That's it.</b>",
-        ParagraphStyle("bold", fontName="Helvetica-Bold", fontSize=10,
-                       textColor=TEAL, leading=14, spaceAfter=8),
+        "<b>After one-time setup, deploying a change means pushing to GitHub. That's it.</b>",
+        s["bold"],
     ))
     story.append(rule(color=MGRAY, thickness=0.5))
 
-    # ── ONE-TIME SETUP ───────────────────────────────────────────────────────
+    # ── ONE-TIME SETUP ────────────────────────────────────────────────────────
     story.append(KeepTogether([
         section_header("One-Time Setup", s),
         Spacer(1, 0.25 * cm),
@@ -121,41 +124,82 @@ def build_story(s):
         "Select the <b>career-transition-intake</b> repository",
         "Render detects <b>render.yaml</b> automatically and fills in the settings",
         "Confirm: Runtime <b>Python</b>, Build Command <b>pip install -r requirements.txt</b>, "
-        "Start Command <b>python app.py</b>",
+        "Start Command <b>gunicorn app:app --bind 0.0.0.0:$PORT</b>",
         "Instance type: <b>Free</b>",
         "Click <b>Create Web Service</b>",
     ]:
         story.append(Paragraph(f"• {line}", s["step"]))
 
-    story.append(Paragraph("4. Add SMTP environment variables", s["h3"]))
+    story.append(Paragraph("4. Sign up for Resend (email delivery)", s["h3"]))
     story.append(Paragraph(
-        "In the service dashboard, go to <b>Environment</b> and add:",
+        "Resend is a transactional email service that sends over HTTPS — it is never blocked "
+        "by hosting providers the way SMTP is. The free tier allows 3,000 emails per month.",
         s["body"],
     ))
-    for name, desc in [
-        ("SMTP_USER",     "Your Gmail address (e.g. yourname@gmail.com)"),
-        ("SMTP_PASSWORD", "Your Gmail App Password — 16-character code from "
-                          "https://myaccount.google.com/apppasswords"),
+    for line in [
+        "Go to <b>https://resend.com</b> and sign up using the consultant's email address "
+        "(e.g. example@gmail.com) — this becomes the verified recipient address",
+        "In the Resend dashboard, go to <b>API Keys → Create API Key</b>",
+        "Give it a name (e.g. <i>career-transition-form</i>) and copy the key — it is shown only once",
     ]:
-        story.append(Paragraph(f"• <b>{name}</b> — {desc}", s["step"]))
+        story.append(Paragraph(f"• {line}", s["step"]))
+
+    story.append(Paragraph("5. Add the Resend API key to Render", s["h3"]))
     story.append(Paragraph(
-        "<i>onboarding_form.py reads these from os.environ automatically. "
-        "Never put credentials in the code or the repo.</i>",
+        "In the Render service dashboard, go to <b>Environment</b> and add one variable:",
+        s["body"],
+    ))
+    story.append(Paragraph(
+        "• <b>RESEND_API_KEY</b> — the API key copied from step 4",
+        s["step"],
+    ))
+    story.append(Paragraph(
+        "<i>The app reads this from the environment automatically. "
+        "Never put the key in the code or the repository.</i>",
         s["note"],
     ))
     story.append(Paragraph(
-        "Click <b>Save Changes</b> — Render triggers a redeploy to apply the variables.",
+        "Click <b>Save Changes</b> — Render triggers a redeploy to apply the variable.",
         s["body"],
     ))
 
     story.append(rule(color=MGRAY, thickness=0.5))
 
-    # ── DEPLOYING ─────────────────────────────────────────────────────────────
+    # ── HOW IT WORKS ─────────────────────────────────────────────────────────
     story.append(KeepTogether([
-        section_header("Deploying", s),
+        section_header("How It Works", s),
+        Spacer(1, 0.25 * cm),
+    ]))
+
+    story.append(Paragraph("Client experience", s["h3"]))
+    story.append(Paragraph(
+        "Clients open the URL, complete the 10-section dark-themed accordion form, "
+        "optionally upload documents (CV, LinkedIn export, job description, learning plan, "
+        "and additional files), then click <b>Submit Onboarding Form</b>. "
+        "The server generates a PDF, emails it to the consultant automatically, "
+        "and triggers a download in the client's browser. "
+        "No credentials, no email settings, and no configuration are shown to clients.",
+        s["body"],
+    ))
+
+    story.append(Paragraph("Email sender address", s["h3"]))
+    story.append(Paragraph(
+        "By default the form sends from <b>onboarding@resend.dev</b> (Resend's shared address). "
+        "To send from a custom domain (e.g. <i>noreply@yourdomain.com</i>), verify the domain "
+        "in the Resend dashboard and set a <b>FROM_EMAIL</b> environment variable in Render "
+        "with the desired address.",
+        s["body"],
+    ))
+
+    story.append(rule(color=MGRAY, thickness=0.5))
+
+    # ── DEPLOYING ────────────────────────────────────────────────────────────
+    story.append(KeepTogether([
+        section_header("Deploying Updates", s),
         Spacer(1, 0.25 * cm),
         Paragraph(
-            "Push any change to GitHub — Render picks it up and redeploys within ~2 minutes:",
+            "Push any change to the main branch — Render picks it up and redeploys "
+            "within ~2 minutes:",
             s["body"],
         ),
         Spacer(1, 0.15 * cm),
@@ -164,7 +208,7 @@ def build_story(s):
 
     story.append(rule(color=MGRAY, thickness=0.5))
 
-    # ── AFTER DEPLOYMENT ──────────────────────────────────────────────────────
+    # ── AFTER DEPLOYMENT ─────────────────────────────────────────────────────
     story.append(KeepTogether([
         section_header("After Deployment", s),
         Spacer(1, 0.25 * cm),
@@ -184,25 +228,20 @@ def build_story(s):
 
     story.append(Paragraph("Free tier spin-down", s["h3"]))
     story.append(Paragraph(
-        "On the free tier, the service spins down after <b>15 minutes of inactivity</b>. "
+        "On the free tier the service spins down after <b>15 minutes of inactivity</b>. "
         "The first request after a quiet period takes ~30 seconds to wake up. "
-        "This is acceptable for a form shared on-demand — just warn clients that the "
-        "first load after a quiet period may be briefly slow.",
+        "For a form shared on-demand this is acceptable — just warn clients that the "
+        "first load may be briefly slow. To eliminate spin-down, upgrade to the "
+        "<b>Starter</b> plan ($7/month) or use a free uptime monitor such as "
+        "UptimeRobot to ping the URL every 10 minutes.",
         s["body"],
     ))
 
-    story.append(Paragraph("Keeping it always on (optional)", s["h3"]))
+    story.append(Paragraph("Rotating the Resend API key", s["h3"]))
     story.append(Paragraph(
-        "Upgrade to the <b>Starter</b> plan ($7/month) to eliminate spin-down. "
-        "Alternatively, use a free uptime monitor (e.g. UptimeRobot) to ping the URL "
-        "every 10 minutes — this keeps the free instance warm at no cost.",
-        s["body"],
-    ))
-
-    story.append(Paragraph("Updating SMTP credentials", s["h3"]))
-    story.append(Paragraph(
-        "Go to <b>Render dashboard → Environment</b>, update the value, and click "
-        "<b>Save Changes</b>. Render redeploys automatically.",
+        "Go to the Resend dashboard, revoke the old key and create a new one. "
+        "Then go to <b>Render → Environment</b>, update <b>RESEND_API_KEY</b>, "
+        "and click <b>Save Changes</b>. Render redeploys automatically.",
         s["body"],
     ))
 
