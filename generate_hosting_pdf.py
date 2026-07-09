@@ -89,15 +89,15 @@ def build_story(s):
     story = []
 
     # Title
-    story.append(Paragraph("Hosting the Onboarding Form on Hugging Face Spaces", s["h1"]))
+    story.append(Paragraph("Hosting the Onboarding Form on Google Cloud Run", s["h1"]))
     story.append(rule(color=GOLD, thickness=1.5, before=2, after=10))
 
     story.append(Paragraph(
-        "Hugging Face Spaces runs Gradio apps for free on a persistent public URL — no 72-hour expiry. "
-        "The GitHub repo (<b>ericgitonga/career-transition-intake</b>) is already set up with a CI/CD "
-        "workflow that syncs to HF Spaces automatically on every push to <b>main</b>. All required "
-        "files — <b>app.py</b>, <b>requirements.txt</b>, and <b>README.md</b> with the HF Space card "
-        "frontmatter — are already in the repo.",
+        "Google Cloud Run hosts the Gradio app as a Docker container on a permanent public URL. "
+        "The free tier covers 2 million requests and 360,000 GB-seconds of compute per month — "
+        "more than sufficient for a low-traffic client intake form. "
+        "The GitHub repo (<b>ericgitonga/career-transition-intake</b>) is set up with a CI/CD "
+        "workflow that builds and deploys automatically on every push to <b>main</b>.",
         s["body"],
     ))
     story.append(Paragraph(
@@ -108,74 +108,77 @@ def build_story(s):
 
     story.append(rule(color=MGRAY, thickness=0.5))
 
-    # ── ONE-TIME SETUP ───────────────────────────────────────────────────────
+    # ── ONE-TIME GCP SETUP ───────────────────────────────────────────────────
     story.append(KeepTogether([
-        section_header("One-Time Setup", s),
+        section_header("One-Time GCP Setup", s),
+        Spacer(1, 0.25 * cm),
+        Paragraph("These steps are required once before the first deployment.", s["note"]),
+    ]))
+
+    story.append(Paragraph("1. Create or select a Google Cloud project", s["h3"]))
+    story.append(Paragraph(
+        "Go to <b>https://console.cloud.google.com</b>. Create a new project or select an "
+        "existing one. Note the <b>Project ID</b> (not the project name).",
+        s["body"],
+    ))
+
+    story.append(Paragraph("2. Enable required APIs", s["h3"]))
+    story.append(Paragraph(
+        "In the Google Cloud Console, go to <b>APIs &amp; Services → Library</b> and enable:",
+        s["body"],
+    ))
+    for api in [
+        "Cloud Run API",
+        "Container Registry API",
+        "Cloud Build API",
+    ]:
+        story.append(Paragraph(f"• {api}", s["step"]))
+
+    story.append(Paragraph("3. Create a service account", s["h3"]))
+    story.append(Paragraph(
+        "Go to <b>IAM &amp; Admin → Service Accounts → Create Service Account</b>. "
+        "Name it e.g. <i>github-deployer</i>. Grant it these roles:",
+        s["body"],
+    ))
+    for role in [
+        "Cloud Run Admin",
+        "Storage Admin  (required to push to Container Registry)",
+        "Service Account User",
+    ]:
+        story.append(Paragraph(f"• {role}", s["step"]))
+    story.append(Paragraph(
+        "After creating, open the service account → <b>Keys → Add Key → Create new key → JSON</b>. "
+        "Download the JSON file — you will paste its contents into a GitHub secret.",
+        s["body"],
+    ))
+
+    story.append(rule(color=MGRAY, thickness=0.5))
+
+    # ── ONE-TIME GITHUB SETUP ────────────────────────────────────────────────
+    story.append(KeepTogether([
+        section_header("One-Time GitHub Setup", s),
         Spacer(1, 0.25 * cm),
         Paragraph(
-            "These steps are required once before the first deployment.",
-            s["note"],
+            "Open <b>github.com/ericgitonga/career-transition-intake → "
+            "Settings → Secrets and variables → Actions</b> and add these secrets:",
+            s["body"],
         ),
     ]))
 
-    # Step 1
-    story.append(Paragraph("1. Create a Hugging Face account", s["h3"]))
-    story.append(Paragraph(
-        "Go to <b>https://huggingface.co</b> and sign up. The free tier is sufficient.",
-        s["body"],
-    ))
+    secrets = [
+        ("GCP_PROJECT_ID", "Your Google Cloud project ID (e.g. my-project-123456)"),
+        ("GCP_SA_KEY", "The full contents of the service account JSON key file"),
+        ("SMTP_USER", "Your Gmail address (e.g. yourname@gmail.com)"),
+        ("SMTP_PASSWORD",
+         "Your Gmail App Password — 16-character code from "
+         "https://myaccount.google.com/apppasswords"),
+    ]
+    for name, desc in secrets:
+        story.append(Paragraph(f"• <b>{name}</b> — {desc}", s["step"]))
 
-    # Step 2
-    story.append(Paragraph("2. Create a new Space", s["h3"]))
-    for line in [
-        "Click your profile avatar → <b>New Space</b>",
-        "Space name: <b>career-transition-intake</b> (must match exactly)",
-        "License: MIT (or leave blank)",
-        "SDK: <b>Gradio</b>",
-        "Hardware: <b>CPU Basic</b> (free)",
-        "Click <b>Create Space</b> — this creates the HF repo at:<br/>"
-        "<i>https://huggingface.co/spaces/&lt;your-hf-username&gt;/career-transition-intake</i>",
-    ]:
-        story.append(Paragraph(f"• {line}", s["step"]))
-
-    # Step 3
-    story.append(Paragraph("3. Create a Hugging Face token", s["h3"]))
-    for line in [
-        "Go to <b>https://huggingface.co/settings/tokens</b>",
-        "Click <b>New token</b> → name it e.g. <i>github-deploy</i> → Role: <b>Write</b>",
-        "Copy the token — you will not see it again",
-    ]:
-        story.append(Paragraph(f"• {line}", s["step"]))
-
-    # Step 4
-    story.append(Paragraph("4. Add secrets to the GitHub repo", s["h3"]))
     story.append(Paragraph(
-        "The deploy workflow reads two secrets. Open "
-        "<b>github.com/ericgitonga/career-transition-intake → Settings → Secrets → Actions</b> "
-        "and add:",
-        s["body"],
-    ))
-    for line in [
-        "<b>HF_TOKEN</b> → the Hugging Face token you just created",
-        "<b>HF_USERNAME</b> → your Hugging Face username",
-    ]:
-        story.append(Paragraph(f"• {line}", s["step"]))
-
-    # Step 5
-    story.append(Paragraph("5. Add SMTP credentials to the HF Space", s["h3"]))
-    story.append(Paragraph(
-        "The form sends emails via Gmail. Credentials must be stored as HF Secrets — never "
-        "in code. Open your Space → <b>Settings</b> tab → <b>Repository secrets</b> and add:",
-        s["body"],
-    ))
-    for line in [
-        "<b>SMTP_USER</b> → your Gmail address (e.g. <i>yourname@gmail.com</i>)",
-        "<b>SMTP_PASSWORD</b> → your Gmail App Password (16-character code from "
-        "https://myaccount.google.com/apppasswords)",
-    ]:
-        story.append(Paragraph(f"• {line}", s["step"]))
-    story.append(Paragraph(
-        "<i>onboarding_form.py already reads these from os.environ — no code change needed.</i>",
+        "<i>SMTP_USER and SMTP_PASSWORD are injected as environment variables into the Cloud Run "
+        "service at deploy time. onboarding_form.py reads them from os.environ automatically.</i>",
         s["note"],
     ))
 
@@ -186,8 +189,7 @@ def build_story(s):
         section_header("Deploying", s),
         Spacer(1, 0.25 * cm),
         Paragraph(
-            "Once the one-time setup is complete, deployment is fully automated. "
-            "Push any changes to the GitHub repo:",
+            "Once setup is complete, deployment is fully automated. Push any change to GitHub:",
             s["body"],
         ),
         Spacer(1, 0.15 * cm),
@@ -195,9 +197,19 @@ def build_story(s):
     story.append(code_block("git push origin main", s))
     story.append(Spacer(1, 0.25 * cm))
     story.append(Paragraph(
-        "The GitHub Actions workflow (<b>.github/workflows/deploy.yml</b>) clones the HF Space repo, "
-        "syncs all files from GitHub, and pushes. The Space rebuilds automatically — roughly 2 minutes.",
+        "The GitHub Actions workflow (<b>.github/workflows/deploy.yml</b>) will:",
         s["body"],
+    ))
+    for step in [
+        "Authenticate to Google Cloud using the service account key",
+        "Build the Docker image from the repo's <b>Dockerfile</b>",
+        "Push the image to Google Container Registry (<i>gcr.io/PROJECT_ID/career-transition-intake</i>)",
+        "Deploy the new image to Cloud Run in <b>us-central1</b>",
+    ]:
+        story.append(Paragraph(f"• {step}", s["step"]))
+    story.append(Paragraph(
+        "First deploy takes 3–5 minutes (image build). Subsequent deploys are faster (~2 min).",
+        s["note"],
     ))
 
     story.append(rule(color=MGRAY, thickness=0.5))
@@ -208,28 +220,47 @@ def build_story(s):
         Spacer(1, 0.25 * cm),
     ]))
 
+    story.append(Paragraph("Finding your URL", s["h3"]))
     story.append(Paragraph(
-        "Your permanent public URL will be:",
+        "After the first deploy, go to <b>Google Cloud Console → Cloud Run → "
+        "career-transition-intake</b>. The public URL is shown at the top of the service page. "
+        "It looks like:",
         s["body"],
     ))
     story.append(code_block(
-        "https://<your-hf-username>-career-transition-intake.hf.space", s
+        "https://career-transition-intake-<hash>-uc.a.run.app", s
     ))
     story.append(Spacer(1, 0.2 * cm))
-
-    for line in [
-        "Every push to <b>main</b> on GitHub triggers a redeploy automatically.",
-        "The free tier sleeps after ~48 hours of inactivity. The Space wakes on the next visit "
-        "(~30 seconds). Warn clients that the first load after a quiet period may be slow.",
-    ]:
-        story.append(Paragraph(f"• {line}", s["step"]))
-
-    story.append(Spacer(1, 0.3 * cm))
-    story.append(Paragraph("<b>To prevent sleep (optional)</b>", s["h3"]))
     story.append(Paragraph(
-        "Upgrade the Space hardware to <b>CPU Upgrade</b> ($0.03/hr) — paid Spaces never sleep. "
-        "Or keep the free tier and note that the first load after inactivity takes ~30 seconds.",
+        "This URL is permanent — it does not change between deploys.",
+        s["note"],
+    ))
+
+    story.append(Paragraph("Cold starts", s["h3"]))
+    story.append(Paragraph(
+        "Cloud Run scales to zero when idle. The first request after a quiet period "
+        "takes ~5–10 seconds while the container starts. Subsequent requests are instant. "
+        "For a client intake form this is acceptable — warn clients that the first load "
+        "may be briefly slow.",
         s["body"],
+    ))
+
+    story.append(Paragraph("Keeping it warm (optional)", s["h3"]))
+    story.append(Paragraph(
+        "To eliminate cold starts, set a minimum instance count of 1 in the Cloud Run service settings "
+        "(<b>Edit &amp; Deploy → Capacity → Minimum number of instances → 1</b>). "
+        "This incurs a small charge (~$3–5/month on the free-tier compute allocation).",
+        s["body"],
+    ))
+
+    story.append(Paragraph("Updating SMTP credentials", s["h3"]))
+    story.append(Paragraph(
+        "Update the <b>SMTP_USER</b> or <b>SMTP_PASSWORD</b> GitHub secrets, then push an empty "
+        "commit to trigger a redeploy:",
+        s["body"],
+    ))
+    story.append(code_block(
+        'git commit --allow-empty -m "Redeploy to pick up new secrets"\ngit push origin main', s
     ))
 
     return story

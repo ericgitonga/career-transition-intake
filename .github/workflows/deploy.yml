@@ -1,4 +1,4 @@
-name: Deploy to Hugging Face Spaces
+name: Deploy to Cloud Run
 
 on:
   push:
@@ -10,26 +10,30 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
         with:
-          fetch-depth: 0
-          lfs: true
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Push to Hugging Face Spaces
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          HF_USERNAME: ${{ secrets.HF_USERNAME }}
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for GCR
+        run: gcloud auth configure-docker --quiet
+
+      - name: Build and push Docker image
         run: |
-          git config --global user.email "gitonga@earthranger.com"
-          git config --global user.name "GitHub Actions"
+          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/career-transition-intake:${{ github.sha }} .
+          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/career-transition-intake:${{ github.sha }}
 
-          # Clone the HF Space repo
-          git clone https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/career-transition-intake hf_space
-
-          # Sync files (exclude git internals and the workflow directory itself)
-          rsync -av --exclude='.git' --exclude='.github' . hf_space/
-
-          # Commit and push if anything changed
-          cd hf_space
-          git add .
-          git diff --cached --quiet && echo "No changes to deploy." || \
-            (git commit -m "Deploy from GitHub ${GITHUB_SHA::7}" && git push)
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy career-transition-intake \
+            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/career-transition-intake:${{ github.sha }} \
+            --platform managed \
+            --region us-central1 \
+            --allow-unauthenticated \
+            --port 8080 \
+            --set-env-vars "SMTP_USER=${{ secrets.SMTP_USER }},SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" \
+            --project ${{ secrets.GCP_PROJECT_ID }}
