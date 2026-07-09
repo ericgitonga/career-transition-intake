@@ -366,7 +366,7 @@ css = """
 .status-box textarea { font-family: monospace; font-size: 0.88rem; }
 """
 
-with gr.Blocks(title="Career Transition Onboarding") as app:
+with gr.Blocks(title="Career Transition Onboarding", css=css, theme=gr.themes.Soft()) as app:
 
     gr.Markdown("# Career Transition Onboarding", elem_classes="form-title")
     gr.Markdown(
@@ -662,7 +662,4 @@ with gr.Blocks(title="Career Transition Onboarding") as app:
     )
 
 if __name__ == "__main__":
-    app.launch(
-        server_name="0.0.0.0", server_port=7860, share=True,
-        inbrowser=True, css=css, theme=gr.themes.Soft(),
-    )
+    app.launch(server_name="0.0.0.0", server_port=7860, share=True, inbrowser=True)
