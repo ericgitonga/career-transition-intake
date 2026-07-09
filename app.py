@@ -187,7 +187,7 @@ def send_email(pdf_path, data, attachments, smtp_user, smtp_password):
         encoders.encode_base64(part)
         part.add_header("Content-Disposition", f'attachment; filename="{Path(fpath).name}"')
         msg.attach(part)
-    with smtplib.SMTP("smtp.gmail.com", 587) as srv:
+    with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as srv:
         srv.ehlo()
         srv.starttls()
         srv.login(smtp_user, smtp_password)
@@ -262,17 +262,21 @@ def submit():
             f.save(tmp.name)
             uploads.append(tmp.name)
 
+    email_status = "skipped"
     if request.form.get("send_email_flag") == "on":
         smtp_user = (request.form.get("smtp_user") or os.environ.get("SMTP_USER", "")).strip()
         smtp_pw   = (request.form.get("smtp_password") or os.environ.get("SMTP_PASSWORD", "")).strip()
         if smtp_user and smtp_pw:
             try:
                 send_email(pdf_path, data, uploads, smtp_user, smtp_pw)
+                email_status = "sent"
             except Exception:
-                pass
+                email_status = "failed"
 
-    return send_file(pdf_path, as_attachment=True,
+    resp = send_file(pdf_path, as_attachment=True,
                      download_name=pdf_name, mimetype="application/pdf")
+    resp.headers["X-Email-Status"] = email_status
+    return resp
 
 
 if __name__ == "__main__":
