@@ -249,6 +249,12 @@ def submit():
             tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
             f.save(tmp.name)
             uploads.append(tmp.name)
+    for f in request.files.getlist("additional_files"):
+        if f and f.filename:
+            suffix = Path(f.filename).suffix or ".bin"
+            tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+            f.save(tmp.name)
+            uploads.append(tmp.name)
 
     email_status = "skipped"
     if os.environ.get("RESEND_API_KEY"):

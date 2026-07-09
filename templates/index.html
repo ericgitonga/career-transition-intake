@@ -54,7 +54,7 @@
 
   <div class="form-header">
     <h1>Career Transition Onboarding</h1>
-    <p>Complete all sections below. Your responses will be compiled into a branded PDF and emailed to your consultant.</p>
+    <p>Complete all sections below. Your responses will be compiled and emailed to your consultant.</p>
   </div>
 
   <form id="form" enctype="multipart/form-data" novalidate>
@@ -387,6 +387,12 @@
             <div class="col-md-6">
               <label class="form-label">Professional headshot (optional)</label>
               <input type="file" name="headshot_file" class="form-control" accept=".jpg,.jpeg,.png">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Additional supporting documents (optional)</label>
+              <input type="file" name="additional_files" class="form-control" multiple
+                     accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png">
+              <div class="form-text">You can select multiple files at once (hold Ctrl / Cmd while clicking).</div>
             </div>
           </div>
         </div>
