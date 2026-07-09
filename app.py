@@ -1,8 +1,7 @@
 import gradio_client.utils as _gcu
 
-# gradio 4.x ships with gradio-client 1.3.0 (a 5.x client). Its
-# json_schema_to_python_type() doesn't guard against boolean schemas,
-# crashing the route handler for every request. Patch it here.
+# gradio-client 1.3.0 (bundled with gradio 4.x) doesn't guard against
+# boolean schemas in json_schema_to_python_type, crashing the route handler.
 _orig = _gcu.json_schema_to_python_type
 
 def _safe_json_schema_to_python_type(schema, defs=None):
@@ -12,6 +11,12 @@ def _safe_json_schema_to_python_type(schema, defs=None):
         return "any"
 
 _gcu.json_schema_to_python_type = _safe_json_schema_to_python_type
+
+# Render blocks loopback connections, so Gradio's post-startup self-ping
+# always fails and raises ValueError. The server IS accessible externally;
+# bypass the internal check.
+import gradio.networking as _gnet
+_gnet.url_ok = lambda url: True
 
 import os
 from onboarding_form import app
