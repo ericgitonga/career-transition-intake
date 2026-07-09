@@ -1,6 +1,9 @@
 # Client folders — never commit client data
 Clients/
 
+# Private report generators
+generate_security_pdf.py
+
 # Runtime artefacts
 .gradio/
 __pycache__/
