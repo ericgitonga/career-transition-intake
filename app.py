@@ -44,12 +44,20 @@ from reportlab.platypus import (
 app = Flask(__name__)
 RECIPIENT = "gitonga@gmail.com"
 
-# ── S-09: Secret key — app refuses to start without it ───────────────────────
+# ── S-09: Secret key ──────────────────────────────────────────────────────────
+# On Render (production) SECRET_KEY is set as an environment variable via the
+# dashboard.  Locally, if it is absent, we auto-generate a random key for the
+# current process so development is frictionless.  The trade-off is that CSRF
+# tokens are invalidated on every restart, which is acceptable in development.
 _secret = os.environ.get("SECRET_KEY", "")
 if not _secret:
-    raise RuntimeError(
-        "SECRET_KEY environment variable is not set. "
-        "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\""
+    _secret = secrets.token_hex(32)
+    import warnings
+    warnings.warn(
+        "SECRET_KEY not set — using a randomly generated key. "
+        "CSRF tokens will be invalidated on restart. "
+        "Set SECRET_KEY in your environment (or Render dashboard) for production.",
+        stacklevel=1,
     )
 app.config["SECRET_KEY"] = _secret
 
