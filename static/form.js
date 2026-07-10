@@ -48,7 +48,19 @@ document.getElementById('form').addEventListener('submit', async function (e) {
     } else {
       const txt = await res.text();
       status.className = 'alert alert-danger';
-      status.textContent = 'Error: ' + txt;
+      if (res.status === 400 && (txt.includes('CSRF') || txt.includes('session token') || txt.includes('Bad Request'))) {
+        status.innerHTML = 'Your session expired while you were filling in the form. '
+          + '<strong>Please refresh the page and resubmit</strong> — '
+          + 'your answers will still be visible in the form.';
+      } else if (res.status === 400) {
+        status.textContent = txt;
+      } else if (res.status === 413) {
+        status.textContent = 'Your files are too large. The total upload size must be under 10 MB.';
+      } else if (res.status === 429) {
+        status.textContent = 'Too many submissions. Please wait a few minutes and try again.';
+      } else {
+        status.textContent = 'Something went wrong. Please try again or contact your consultant directly.';
+      }
     }
   } catch (err) {
     status.className = 'alert alert-danger';

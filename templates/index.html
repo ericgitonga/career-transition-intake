@@ -56,6 +56,10 @@
   <div class="form-header">
     <h1>Career Transition Onboarding</h1>
     <p>Complete all sections below. Your responses will be compiled and emailed to your consultant.</p>
+    <p class="mt-1" style="color:#a0b0c8; font-size:.85rem;">
+      This form is for career changers, sector pivots, and entrepreneurs exploring a new domain —
+      whether you are moving between jobs, industries, or business areas.
+    </p>
   </div>
 
   <form id="form" enctype="multipart/form-data" novalidate>
@@ -130,10 +134,6 @@
             <label class="form-label">Concrete steps already taken</label>
             <textarea name="steps_taken" class="form-control" rows="3" placeholder="e.g. Completed Coursera AI for Everyone; attended two industry events"></textarea>
           </div>
-          <div class="mb-3">
-            <label class="form-label">What specifically attracts you to the target domain?</label>
-            <textarea name="attraction" class="form-control" rows="4" placeholder="e.g. I want work that aligns with my environmental values..."></textarea>
-          </div>
         </div>
       </div>
     </div>
@@ -149,7 +149,13 @@
         <div class="accordion-body">
           <div class="mb-3">
             <label class="form-label">Target domain / field *</label>
-            <input type="text" name="target_domain" class="form-control" placeholder="e.g. Climate Finance, ESG Advisory, Digital Health">
+            <input type="text" name="target_domain" class="form-control"
+              placeholder="e.g. Climate Finance, ESG Advisory, Digital Health, Fintech, EdTech startup, Agribusiness pivot…">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">What specifically attracts you to this domain?</label>
+            <textarea name="attraction" class="form-control" rows="4"
+              placeholder="e.g. I want work that aligns with my environmental values and has direct community impact…"></textarea>
           </div>
           <div class="mb-3">
             <label class="form-label">How clear are you on the role you want?</label>
@@ -163,6 +169,16 @@
               {% for v in ["NGO / Non-profit","Multilateral / UN agency","Development finance institution","Corporate / Multinational","Tech company","Government / Public sector","Think tank / Research institute","Consultancy","Startup","Academic institution"] %}
               <div class="col-md-6">
                 <div class="form-check"><input class="form-check-input" type="checkbox" name="org_types" value="{{ v }}" id="ot{{ loop.index }}"><label class="form-check-label" for="ot{{ loop.index }}">{{ v }}</label></div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Preferred organisation stage (select all that apply)</label>
+            <div class="row">
+              {% for v in ["Early-stage startup (seed / Series A)","Growth-stage startup (Series B+)","Established / mid-size organisation","Large / mature organisation (1 000+ staff)","No preference"] %}
+              <div class="col-md-6">
+                <div class="form-check"><input class="form-check-input" type="checkbox" name="org_stage" value="{{ v }}" id="os{{ loop.index }}"><label class="form-check-label" for="os{{ loop.index }}">{{ v }}</label></div>
               </div>
               {% endfor %}
             </div>
@@ -336,7 +352,7 @@
     <div class="accordion-item">
       <h2 class="accordion-header">
         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#s9">
-          <span class="num">9</span> Deliverable Preferences
+          <span class="num">9</span> About Your Plan
         </button>
       </h2>
       <div id="s9" class="accordion-collapse collapse">
@@ -371,8 +387,9 @@
           <p class="text-muted small">These will be attached to the email sent to your consultant and used to generate your Career Transition Plan.</p>
           <div class="row g-3">
             <div class="col-md-6">
-              <label class="form-label">CV / Résumé (PDF recommended) *</label>
+              <label class="form-label">CV / Résumé (optional for entrepreneurs)</label>
               <input type="file" name="cv_file" class="form-control" accept=".pdf,.doc,.docx">
+              <div class="form-text">Job seekers: upload your CV. Entrepreneurs: upload a company profile, pitch deck, or bio instead.</div>
             </div>
             <div class="col-md-6">
               <label class="form-label">LinkedIn export or profile summary (optional)</label>

@@ -339,14 +339,15 @@ def build_pdf(d, path):
             ("What is driving this transition?",                      d.get("motivation_type")),
             ("How long have you been thinking about this move?",      d.get("thinking_duration")),
             ("Concrete steps already taken",                          d.get("steps_taken")),
-            ("What specifically attracts you to the target domain?",  d.get("attraction")),
         ]),
         ("Section 3 — Target Role Clarity", [
+            ("Target domain / field",                                 d.get("target_domain")),
+            ("What specifically attracts you to this domain?",        d.get("attraction")),
             ("How clear are you on the role you want?",               d.get("target_clarity")),
             ("Preferred organisation types",                          d.get("org_types")),
+            ("Preferred organisation stage",                          d.get("org_stage")),
             ("Roles / sectors explicitly ruled out",                  d.get("ruled_out")),
             ("People or organisations you admire in the target field",d.get("admired")),
-            ("Target domain / field",                                 d.get("target_domain")),
         ]),
         ("Section 4 — Constraints & Capacity", [
             ("Currently employed?",                                   d.get("employed")),
@@ -375,7 +376,7 @@ def build_pdf(d, path):
             ("Previous attempts to make this move",                   d.get("past_attempts")),
             ("Biggest uncertainties or fears",                        d.get("biggest_fears")),
         ]),
-        ("Section 9 — Deliverable Preferences", [
+        ("Section 9 — About Your Plan", [
             ("Who will see this plan?",                               d.get("plan_audience")),
             ("Sections to emphasise",                                 d.get("emphasise")),
             ("Background notes / anything to handle with care",       d.get("background_notes")),
@@ -523,6 +524,7 @@ def submit():
         target_domain=_clip(request.form.get("target_domain"), 500),
         target_clarity=_clip(request.form.get("target_clarity"), 200),
         org_types=request.form.getlist("org_types"),
+        org_stage=request.form.getlist("org_stage"),
         ruled_out=_clip(request.form.get("ruled_out"), 2000),
         admired=_clip(request.form.get("admired"), 2000),
         employed=_clip(request.form.get("employed"), 100),
