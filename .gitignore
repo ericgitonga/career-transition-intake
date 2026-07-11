@@ -4,6 +4,9 @@ extras/
 
 # Private report generators
 generate_security_pdf.py
+generate_design_pdf.py
+generate_feedback_pdf.py
+generate_selfhosting_pdf.py
 
 # Runtime artefacts
 __pycache__/
