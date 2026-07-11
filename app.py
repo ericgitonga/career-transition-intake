@@ -23,6 +23,7 @@ import os
 import secrets
 import tempfile
 import unicodedata
+import zipfile
 from datetime import datetime
 from pathlib import Path
 
@@ -187,6 +188,55 @@ def _security_headers(resp):
         "font-src 'self' cdn.jsdelivr.net;"
     )
     return resp
+
+
+# ── Client naming helpers ─────────────────────────────────────────────────────
+
+def _client_slug(full_name: str) -> str:
+    """Derive a compact client identifier from a full name.
+
+    Takes the first name verbatim and appends the uppercased first letter of
+    each subsequent name part, giving a filesystem-safe string that is
+    meaningful at a glance.
+
+    Examples:
+        "Alex Mercer"       -> "AlexM"
+        "Marie Anne Curie"  -> "MarieAC"
+        "Jean-Paul Sartre"  -> "Jean-PaulS"
+    """
+    parts = _sanitize(full_name).split()
+    if not parts:
+        return "Client"
+    first = parts[0]
+    initials = "".join(p[0].upper() for p in parts[1:] if p)
+    return first + initials
+
+
+def _build_zip(slug: str, pdf_path: str, pdf_name: str,
+               uploads: list) -> tuple:
+    """Bundle the intake PDF and all uploads into a single ZIP archive.
+
+    Args:
+        slug:     Client identifier, e.g. ``"AlexM"``.
+        pdf_path: Filesystem path to the generated intake PDF temp file.
+        pdf_name: Friendly name for the intake PDF inside the archive,
+                  e.g. ``"AlexM-intake.pdf"``.
+        uploads:  List of ``(temp_path, arc_name)`` tuples — one per upload.
+
+    Returns:
+        A ``(zip_path, zip_name)`` tuple where *zip_path* is the temp file
+        that must be cleaned up by the caller and *zip_name* is the
+        consultant-facing filename, e.g. ``"AlexM.zip"``.
+    """
+    zip_name = f"{slug}.zip"
+    zip_path = os.path.join(tempfile.gettempdir(),
+                            f"bundle_{secrets.token_hex(8)}.zip")
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+        zf.write(pdf_path, arcname=pdf_name)
+        for tmp_path, arc_name in uploads:
+            if tmp_path and os.path.exists(tmp_path):
+                zf.write(tmp_path, arcname=arc_name)
+    return zip_path, zip_name
 
 
 # ── PDF helpers ───────────────────────────────────────────────────────────────
@@ -393,34 +443,29 @@ def build_pdf(d, path):
     return path
 
 
-def send_email(pdf_path, data, upload_paths):
-    """Send the intake PDF and any uploaded documents to the consultant via Resend.
+def send_email(attachment_path, attachment_name, data, has_uploads: bool):
+    """Send the intake package to the consultant via Resend.
+
+    When the client uploaded supporting documents (CV, JD, etc.) the
+    ``attachment_path`` points to a ZIP archive (``AlexM.zip``) that already
+    contains the intake PDF plus every upload.  When no documents were
+    uploaded, ``attachment_path`` is just the bare intake PDF.
 
     Uses the Resend HTTP API (not SMTP) so the call succeeds on hosting
-    providers that block outbound port 587. The API key is read from the
-    ``RESEND_API_KEY`` environment variable at call time. The sender address
-    defaults to ``onboarding@resend.dev`` (Resend's shared domain, no DNS
-    setup required) and can be overridden by setting a ``FROM_EMAIL``
-    environment variable to a verified custom-domain address.
-
-    Each file — the generated PDF plus every uploaded document — is read into
-    memory and passed to Resend as a list of byte integers, which is the format
-    the Resend Python SDK expects for attachments.
-
-    Fields used in the email subject/body are sanitised with ``_sanitize()``
-    before interpolation to prevent control-character spoofing (S-12).
+    providers that block outbound port 587.  Fields used in the email
+    subject/body are sanitised with ``_sanitize()`` (S-12).
 
     Args:
-        pdf_path:     Absolute path to the generated intake PDF.
-        data:         Dictionary of form field values (used to populate the
-                      plain-text email body and subject line).
-        upload_paths: List of absolute paths to client-uploaded documents.
-                      May be empty if the client did not attach any files.
+        attachment_path: Absolute path to the file to attach (zip or PDF).
+        attachment_name: Consultant-facing filename for the attachment,
+                         e.g. ``"AlexM.zip"`` or ``"AlexM-intake.pdf"``.
+        data:            Dictionary of form field values (subject/body copy).
+        has_uploads:     True when uploads are bundled in the attachment so
+                         the email body can mention them.
 
     Raises:
         KeyError:  If ``RESEND_API_KEY`` is not set in the environment.
-        Exception: Any network or API error raised by the Resend SDK
-                   (propagated to the caller, which sets email_status="failed").
+        Exception: Any network or API error raised by the Resend SDK.
     """
     resend.api_key = os.environ["RESEND_API_KEY"]
 
@@ -430,7 +475,6 @@ def send_email(pdf_path, data, upload_paths):
     timeline = _sanitize(data.get("timeline", "—"))
     target   = _sanitize(data.get("target_domain", "—"))
 
-    n_docs = len(upload_paths)
     body = (
         f"New career transition onboarding submission received.\n\n"
         f"Client:   {name}\n"
@@ -439,21 +483,20 @@ def send_email(pdf_path, data, upload_paths):
         f"Timeline: {timeline}\n"
         f"Target:   {target}\n\n"
         f"Full intake responses are in the attached PDF."
-        + (f"\n{n_docs} supporting document(s) also attached." if n_docs else "")
+        + ("\nSupporting documents (CV, JD, etc.) are bundled in the ZIP."
+           if has_uploads else "")
     )
-    attachments = []
-    for fpath in [pdf_path] + upload_paths:
-        if not fpath or not os.path.exists(str(fpath)):
-            continue
-        with open(fpath, "rb") as f:
-            attachments.append({"filename": Path(fpath).name, "content": list(f.read())})
+
+    with open(attachment_path, "rb") as f:
+        content = list(f.read())
+
     resend.Emails.send({
         "from":        os.environ.get("FROM_EMAIL", "onboarding@resend.dev"),
         "to":          [RECIPIENT],
         "subject":     (f"Career Transition Intake — {name} — "
                         f"{datetime.now().strftime('%d %b %Y')}"),
         "text":        body,
-        "attachments": attachments,
+        "attachments": [{"filename": attachment_name, "content": content}],
     })
 
 
@@ -532,6 +575,8 @@ def submit():
     if not full_name:
         return "Please enter your full name.", 400
 
+    slug = _client_slug(full_name)
+
     data = dict(
         full_name=full_name,
         city_country=_clip(request.form.get("city_country"), 200),
@@ -570,10 +615,10 @@ def submit():
         background_notes=_clip(request.form.get("background_notes"), 5000),
     )
 
-    # S-13: cryptographically random filename — not guessable from initials + time
+    # S-13: temp file path is cryptographically random; display name uses slug
     token    = secrets.token_hex(8)
-    pdf_name = f"intake_{token}.pdf"
-    pdf_path = os.path.join(tempfile.gettempdir(), pdf_name)
+    pdf_name = f"{slug}-intake.pdf"
+    pdf_path = os.path.join(tempfile.gettempdir(), f"intake_{token}.pdf")
 
     try:
         build_pdf(data, pdf_path)
@@ -582,13 +627,18 @@ def submit():
         app.logger.error("PDF generation failed: %s", exc, exc_info=True)
         return "PDF generation failed. Please try again.", 500
 
-    # S-03 / S-14: validate extension against whitelist before writing to disk
-    uploads = []
-    all_files = (
-        [request.files.get(fld) for fld in ["cv_file", "linkedin_file", "jd_file", "learning_plan_file"]]
-        + request.files.getlist("additional_files")
-    )
-    for f in all_files:
+    # S-03 / S-14: validate extension against whitelist before writing to disk.
+    # Each upload is stored as (temp_path, arc_name) so the ZIP uses meaningful
+    # names (e.g. AlexM-CV.pdf) rather than the random temp filenames.
+    uploads = []  # list of (temp_path: str, arc_name: str)
+    named_fields = [
+        ("cv_file",            f"{slug}-CV"),
+        ("linkedin_file",      f"{slug}-LinkedIn"),
+        ("jd_file",            f"{slug}-JD"),
+        ("learning_plan_file", f"{slug}-LearningPlan"),
+    ]
+    for field_name, label in named_fields:
+        f = request.files.get(field_name)
         if not f or not f.filename:
             continue
         try:
@@ -597,7 +647,18 @@ def submit():
             return str(exc), 400
         tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
         f.save(tmp.name)
-        uploads.append(tmp.name)
+        uploads.append((tmp.name, f"{label}{suffix}"))
+
+    for i, f in enumerate(request.files.getlist("additional_files"), 1):
+        if not f or not f.filename:
+            continue
+        try:
+            suffix = _safe_suffix(f.filename)
+        except ValueError as exc:
+            return str(exc), 400
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+        f.save(tmp.name)
+        uploads.append((tmp.name, f"{slug}-Extra{i}{suffix}"))
 
     # S-15: structured submission log for audit trail and abuse detection
     app.logger.info(
@@ -606,32 +667,43 @@ def submit():
         data.get("target_domain"), len(uploads),
     )
 
+    # When uploads are present, bundle everything into a ZIP; otherwise email
+    # just the intake PDF.  zip_path is None when no uploads were received.
+    zip_path = None
+    if uploads:
+        zip_path, zip_name = _build_zip(slug, pdf_path, pdf_name, uploads)
+        attachment_path, attachment_name = zip_path, zip_name
+    else:
+        attachment_path, attachment_name = pdf_path, pdf_name
+
     email_status = "skipped"
     if os.environ.get("RESEND_API_KEY"):
         try:
-            send_email(pdf_path, data, uploads)
+            send_email(attachment_path, attachment_name, data, bool(uploads))
             email_status = "sent"
         except Exception:
             email_status = "failed"
 
     # S-15: log outcome so silent email failures are visible in server logs
     app.logger.info(
-        "Submission complete: name=%s email_status=%s",
-        data.get("full_name"), email_status,
+        "Submission complete: name=%s email_status=%s attachment=%s",
+        data.get("full_name"), email_status, attachment_name,
     )
 
     # S-07: delete all temp files after response is built, regardless of outcome
+    upload_tmp_paths = [p for p, _ in uploads]
     try:
         resp = send_file(pdf_path, as_attachment=True,
                          download_name=pdf_name, mimetype="application/pdf")
         resp.headers["X-Email-Status"] = email_status
         return resp
     finally:
-        for p in [pdf_path] + uploads:
-            try:
-                os.unlink(p)
-            except OSError:
-                pass
+        for p in [pdf_path, zip_path] + upload_tmp_paths:
+            if p:
+                try:
+                    os.unlink(p)
+                except OSError:
+                    pass
 
 
 if __name__ == "__main__":
