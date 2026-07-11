@@ -138,8 +138,8 @@ def cover(s):
         [[Paragraph("Career Transition Intake Form", s["title"])],
          [Paragraph("Round 1 Feedback Report", s["subtitle"])],
          [Spacer(1, 6)],
-         [Paragraph("Testers: Jean Onyango · Aida", s["meta"])],
-         [Paragraph("Date: 10 July 2026 &nbsp;|&nbsp; Prepared by: Eric Gitonga", s["meta"])]],
+         [Paragraph("Testers: Jean Onyango · Aida · Additional tester", s["meta"])],
+         [Paragraph("Date: 10–11 July 2026 &nbsp;|&nbsp; Prepared by: Eric Gitonga", s["meta"])]],
         colWidths=[INNER_W],
     )
     cover_bg.setStyle(TableStyle([
@@ -166,11 +166,12 @@ def section_overview(s):
             "Aida reviewed the form and provided a written UX summary.",
             s["body"]),
         Paragraph(
-            "The findings are grouped into five categories: a critical technical bug that "
+            "The findings are grouped into six categories: a critical technical bug that "
             "prevented submission entirely; form flow issues where question sequencing confused "
             "testers; a missing question identified by Jean; a section title that needs "
-            "rewording; and a scope/audience gap flagged by Aida. Each finding includes "
-            "a recommended fix and a priority rating.",
+            "rewording; a scope/audience gap flagged by Aida; and a cold-start loading screen "
+            "issue raised by an additional tester. Each finding includes a recommended fix, "
+            "a priority rating, and implementation status.",
             s["body"]),
         Spacer(1, 4),
         rule(MGRAY, 0.5),
@@ -612,16 +613,92 @@ def section_error_display(s):
     return out
 
 
-# ── Section 8: Summary Table ──────────────────────────────────────────────────
+# ── Section 8: Loading Screen ────────────────────────────────────────────────
+
+def section_loading_screen(s):
+    out = [
+        section_header("8.  Cold-Start Loading Screen — Server Logs Exposed to Client", s),
+        Spacer(1, 8),
+    ]
+
+    out += [
+        Paragraph("Source", s["h3"]),
+        Paragraph(
+            "Additional tester — written feedback received 11 July 2026.",
+            s["body"]),
+
+        Paragraph("What was reported", s["h3"]),
+        Paragraph(
+            "When the application is accessed after a period of inactivity, Render's free-tier "
+            "instance must restart from a cold state. During this restart period, Render's "
+            "reverse proxy displays its own 'APPLICATION LOADING' page — a dark screen showing "
+            "timestamped server log lines such as 'INCOMING HTTP REQUEST DETECTED', "
+            "'SERVICE WAKING UP', 'ALLOCATING COMPUTE RESOURCES', and 'ENVIRONMENT VARIABLES "
+            "INJECTED'. The tester found this screen confusing and inappropriate for a "
+            "client-facing professional service.",
+            s["body"]),
+    ]
+
+    out.append(callout(
+        "Tester's feedback (paraphrased):",
+        "\"The loading of the form should not happen as the user sees the code. That screen "
+        "should be replaced with a blank screen that gives an estimate of how long it will "
+        "take for the form to complete loading.\"",
+        s))
+    out.append(Spacer(1, 8))
+
+    out += [
+        Paragraph("Why this cannot be fixed from within the Flask app", s["h3"]),
+        Paragraph(
+            "Render's cold-start screen is served by Render's own reverse proxy infrastructure "
+            "before the gunicorn process binds to the port. No Flask route, template, or "
+            "middleware can intercept or replace it — the application is not yet running "
+            "when the screen is shown. A different architectural approach is required.",
+            s["body"]),
+
+        Paragraph("Solution implemented", s["h3"]),
+        Paragraph(
+            "A companion Render Static Site service was added alongside the Flask web service. "
+            "Static sites on Render have no cold start and serve files instantly from Render's "
+            "CDN. The loading page (<b>loading/index.html</b>) was created with the following "
+            "behaviour:",
+            s["body"]),
+        Paragraph("• Dark-theme branded screen matching the app's navy / teal / gold palette", s["bullet"]),
+        Paragraph("• Spinner, animated progress bar, and a 40-second estimated countdown", s["bullet"]),
+        Paragraph("• JavaScript polls the Flask app's <b>/_health</b> endpoint every 3 seconds", s["bullet"]),
+        Paragraph("• Automatically redirects to the form once the health check returns 200", s["bullet"]),
+        Paragraph("• Falls back to 'Still starting… almost there' copy once the countdown expires", s["bullet"]),
+        Spacer(1, 6),
+        Paragraph(
+            "A <b>/_health</b> endpoint was added to the Flask app returning "
+            "<i>{\"status\":\"ok\"}</i> with an <i>Access-Control-Allow-Origin</i> header "
+            "scoped to the loading site's origin (set via the LOADING_SITE_ORIGIN environment "
+            "variable). The canonical client-facing URL is now the loading page; the Flask "
+            "app URL is never shared directly.",
+            s["body"]),
+    ]
+
+    out.append(callout(
+        "Priority: HIGH — Status: RESOLVED",
+        "Server internals exposed to clients on first visit create a poor first impression and "
+        "raise concerns about professionalism. The companion static site approach eliminates "
+        "the issue entirely within the free tier. Implemented: 11 July 2026.",
+        s, bg=colors.HexColor("#F0FBF4"), border=GREEN))
+    out.append(Spacer(1, 4))
+    out.append(rule(MGRAY, 0.5))
+    return out
+
+
+# ── Section 9: Summary Table ──────────────────────────────────────────────────
 
 def section_summary(s):
     out = [
         PageBreak(),
-        section_header("8.  Summary Change Table", s),
+        section_header("9.  Summary Change Table", s),
         Spacer(1, 8),
         Paragraph(
             "All findings from Round 1, ordered by priority. Each item includes the source "
-            "tester, the affected component, and the recommended action.",
+            "tester, the affected component, the recommended action, and implementation status.",
             s["body"]),
         Spacer(1, 6),
     ]
@@ -644,16 +721,21 @@ def section_summary(s):
          "Parse HTTP status; show user-friendly session-expiry message",
          "HIGH"],
         ["4",
+         "Cold-start loading screen exposes server logs to client",
+         "Additional tester", "Render infra / render.yaml",
+         "Companion Render Static Site with branded loading page and /_health poller",
+         "HIGH"],
+        ["5",
          "No question about preferred org lifecycle stage",
          "Jean", "index.html — Section 3",
          "Add multi-select: Early startup / Growth startup / Established / Large / No preference",
          "MEDIUM"],
-        ["5",
+        ["6",
          "Form appears corporate/job-market only — entrepreneurs feel excluded",
          "Aida", "index.html — framing copy",
          "Add scope note to subtitle; make CV optional for entrepreneurs; add domain field hints",
          "MEDIUM"],
-        ["6",
+        ["7",
          "Section 9 title 'Deliverable Preferences' is unclear",
          "Jean", "index.html — Section 9 header",
          "Rename to 'About Your Plan'",
@@ -720,7 +802,7 @@ def footer(canvas, doc):
     canvas.setFont("Helvetica", 8)
     canvas.setFillColor(MGRAY)
     canvas.drawCentredString(W / 2, 0.8 * cm,
-                             f"Career Transition Intake Form — Round 1 Feedback Report  |  Page {doc.page}")
+                             f"Career Transition Intake Form — Round 1 Feedback Report  |  10–11 July 2026  |  Page {doc.page}")
     canvas.restoreState()
 
 
@@ -742,6 +824,7 @@ def build():
     story += section_title_clarity(s)
     story += section_scope(s)
     story += section_error_display(s)
+    story += section_loading_screen(s)
     story += section_summary(s)
     doc.build(story, onFirstPage=footer, onLaterPages=footer)
     print(f"Written → {OUTPUT_PATH}")
