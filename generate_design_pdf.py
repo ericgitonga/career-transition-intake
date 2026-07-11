@@ -387,6 +387,16 @@ def build_story(s):
         "codebase, documented in detail in a separate internal audit report (Clients/security.pdf).",
         s["body"],
     ))
+    story.append(Paragraph(
+        "A subsequent round of user testing identified that Render's built-in cold-start "
+        "loading screen — displaying server log output to the client — was confusing and "
+        "inappropriate for a professional service. A companion Render Static Site was added "
+        "as the canonical client-facing entry point: a branded loading page with an animated "
+        "progress bar and estimated countdown that polls the Flask app and redirects "
+        "automatically once it is ready. User-facing error messaging and startup behaviour "
+        "were simultaneously formalised in SKILL.md as first-class design principles.",
+        s["body"],
+    ))
     story.append(Spacer(1, 0.2 * cm))
     story.append(rule(MGRAY, 0.5))
 
@@ -586,6 +596,33 @@ def build_story(s):
         "and GitHub-triggered continuous deployment at no cost on the free tier. "
         "render.yaml codifies the service configuration so the hosting setup is "
         "reproducible and version-controlled.",
+        s["body"],
+    ))
+
+    story.append(sub_header("Loading Page — Render Static Site", s))
+    story.append(Spacer(1, 0.15 * cm))
+    story.append(Paragraph(
+        "Render's free-tier web service spins down after 15 minutes of inactivity and "
+        "displays its own 'APPLICATION LOADING' screen — showing server log output — while "
+        "the instance restarts. This screen is served by Render's reverse proxy before "
+        "gunicorn binds to the port and cannot be replaced from within application code.",
+        s["body"],
+    ))
+    story.append(Paragraph(
+        "To replace this experience, a companion Render Static Site (career-transition-loading) "
+        "was added alongside the Flask web service in render.yaml. Static sites on Render have "
+        "no cold start and serve files instantly. The loading page (loading/index.html) shows a "
+        "branded dark-theme waiting screen with a spinner, animated progress bar, and estimated "
+        "40-second countdown. It polls the Flask app's /_health endpoint every three seconds "
+        "via the Fetch API and redirects automatically on a 200 response. The canonical "
+        "client-facing URL is the loading page; the Flask app URL is never shared directly.",
+        s["body"],
+    ))
+    story.append(Paragraph(
+        "The /_health endpoint returns {\"status\":\"ok\"} with an Access-Control-Allow-Origin "
+        "header scoped to the loading site's origin, configurable via the LOADING_SITE_ORIGIN "
+        "environment variable. This permits the cross-origin Fetch poll without relaxing CORS "
+        "across the rest of the application.",
         s["body"],
     ))
 
@@ -814,6 +851,21 @@ def build_story(s):
          "per-process and reset on restart — acceptable given the low traffic profile of a "
          "private coaching intake form. A Redis backend would be required if the application "
          "were scaled to multiple workers, and is noted as a future upgrade path."),
+        ("Companion static loading site for cold-start UX",
+         "Render's free-tier instances display a server-log loading screen during cold starts — "
+         "output that is confusing and inappropriate for a client-facing professional service. "
+         "Because this screen is injected by Render's reverse proxy before any application code "
+         "runs, it cannot be replaced through Flask routing or templating. A separate Render "
+         "Static Site — which has no cold start — serves as the canonical entry point. It shows "
+         "a clean branded waiting screen, polls /_health to detect readiness, and redirects "
+         "automatically. The pattern completely hides Render's infrastructure from clients while "
+         "staying within the free tier."),
+        ("User-facing behaviour as a documented design rule",
+         "Tester feedback formalised two principles now codified in SKILL.md: errors shown in "
+         "the browser must always be plain English — no Python tracebacks, status codes, or "
+         "server log lines — and the loading page URL is the only URL shared with clients. "
+         "Documenting these as explicit rules, not just implementation choices, ensures any "
+         "future changes to error handling or hosting configuration preserve the same standard."),
     ]
     for title, body in decisions:
         story.append(Paragraph(b(title), s["h3"]))
@@ -855,14 +907,16 @@ def build_story(s):
         ["Phase 2 Hardening",       "Rate limiting (Flask-Limiter), exception handling, temp cleanup, pinned deps, input limits", "3"],
         ["Phase 3 Hardening",       "Control-char stripping (_sanitize), random temp filenames, structured submission logging", "1"],
         ["Security Testing",        "End-to-end verification: CSRF rejection, rate-limit response, file type rejection, CSP and header inspection", "2"],
+        ["Round 2 Feedback — Cold-Start UX", "Branded static loading page (loading/index.html), /_health endpoint with CORS headers, Render Static Site service in render.yaml, SKILL.md user-facing behaviour rules", "3"],
     ]
     col_w = [INNER_W * 0.30, INNER_W * 0.55, INNER_W * 0.15]
     story.append(phase_table(effort_rows, s, col_widths=col_w))
 
     story.append(Spacer(1, 0.15 * cm))
     story.append(Paragraph(
-        "Total estimated effort: <b>57 hours</b>  (range: 51 – 63 hrs), comprising "
-        "45 hours of product development and 12 hours of security audit and hardening.",
+        "Total estimated effort: <b>60 hours</b>  (range: 54 – 66 hrs), comprising "
+        "45 hours of product development, 12 hours of security audit and hardening, "
+        "and 3 hours of Round 2 UX feedback implementation.",
         s["bold"],
     ))
     story.append(rule(MGRAY, 0.5))
@@ -986,13 +1040,20 @@ def build_story(s):
          "Six pinned dependencies: flask==3.1.3, flask-wtf==1.3.0, flask-limiter==4.1.1, "
          "gunicorn==26.0.0, reportlab==4.4.10, resend==2.32.2."),
         ("render.yaml",
-         "Infrastructure-as-code: Python runtime, build/start commands, RESEND_API_KEY and "
-         "SECRET_KEY environment variable declarations (both sync: false — set in dashboard)."),
+         "Infrastructure-as-code: two services — the Flask web service (Python runtime, "
+         "gunicorn start command, RESEND_API_KEY / SECRET_KEY / LOADING_SITE_ORIGIN env vars) "
+         "and the companion Render Static Site (career-transition-loading, staticPublishPath: loading)."),
+        ("loading/index.html",
+         "Branded dark-theme loading page served by the Render Static Site. Displays a spinner, "
+         "animated progress bar, and estimated 40-second countdown. Polls the Flask app's "
+         "/_health endpoint every 3 seconds and redirects on success. This is the canonical "
+         "client-facing URL — it replaces Render's server-log cold-start screen entirely."),
         (".python-version",
          "Pins Python 3.11.9 to ensure consistent runtime across all Render deploys."),
         ("SKILL.md",
          "Consultant workflow guide including a Security First section with a controls reference "
-         "table, client data handling rules, change-management guidelines, and an expanded "
+         "table, client data handling rules, user-facing behaviour rules (plain-English errors, "
+         "loading page as canonical entry point), change-management guidelines, and an expanded "
          "quality checklist with security checks as the first gate."),
         ("hosting.pdf",
          "Illustrated setup guide for deploying and operating the service, covering Render "
@@ -1008,12 +1069,14 @@ def build_story(s):
         story.append(Paragraph(f"• <b>{name}</b> — {desc}", s["bullet"]))
 
     story.append(Spacer(1, 0.2 * cm))
-    story.append(Paragraph(b("Live URL:"), s["h3"]))
-    story.append(Paragraph("https://career-transition-intake.onrender.com", s["code"]))
+    story.append(Paragraph(b("Live URLs:"), s["h3"]))
+    story.append(Paragraph("Client entry point (share this):  https://career-transition-loading.onrender.com", s["code"]))
+    story.append(Paragraph("Flask application (internal):     https://career-transition-intake.onrender.com", s["code"]))
     story.append(Spacer(1, 0.2 * cm))
     story.append(Paragraph(
-        "The service is production-ready and hardened. A client can be directed to the "
-        "URL immediately. On submission, their completed intake PDF is delivered to the "
+        "The service is production-ready and hardened. Clients are directed to the loading "
+        "page URL, which handles cold-start waiting gracefully and redirects automatically "
+        "to the form. On submission, their completed intake PDF is delivered to the "
         "consultant's inbox within seconds, with no manual intervention required, and "
         "the submission is logged server-side for audit and abuse detection.",
         s["body"],
