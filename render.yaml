@@ -14,9 +14,5 @@ services:
 
   - type: static
     name: career-transition-loading
-    staticPublishPath: .
+    staticPublishPath: loading
     buildCommand: echo "static site, no build needed"
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /loading.html
