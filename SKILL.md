@@ -30,6 +30,26 @@ are built with security as a primary requirement, not an afterthought.
 | Pinned dependencies | All packages are pinned to known-good versions in requirements.txt |
 | No inline scripts | All JavaScript is served from static/form.js, enabling a strict script-src CSP with no 'unsafe-inline' |
 
+### User-facing behaviour rules
+
+Users must never see backend internals. This applies at every layer of the stack.
+
+**Errors**
+- All error messages shown in the browser must be plain English. Never surface Python tracebacks, Flask debug output, HTTP status codes as raw text, or server log lines to the client.
+- The submit handler in `form.js` must catch every non-2xx response and display a human-readable sentence — not `res.status` or `err.message` verbatim.
+- If a new error condition is added to `app.py`, a corresponding user-friendly message must be added in `form.js` before the change ships.
+
+**Startup / cold start**
+- The hosted entry point for clients is the loading page at `https://career-transition-loading.onrender.com`, not the Flask app URL directly. Share only the loading page URL.
+- The loading page (`loading/index.html`) shows a branded waiting screen with an estimated countdown. It polls `/_health` and redirects automatically — clients never see Render's server-log loading screen.
+- If the loading page URL or the Flask app URL ever changes, update both `loading/index.html` (`APP_URL` constant) and this document.
+
+**When making changes to error handling or startup**
+- Any new route that can return an error must return a plain-English string body, not a Python exception message.
+- Any change to the app's hosted URL requires updating `APP_URL` in `loading/index.html` and the `LOADING_SITE_ORIGIN` env var in `render.yaml`.
+
+---
+
 ### Client data handling rules
 
 - **Never commit client data.** `Clients/` is gitignored permanently. Even a test submission should not be pushed.
@@ -60,8 +80,9 @@ are built with security as a primary requirement, not an afterthought.
 
 ```
 Step 1 — Send the intake form
-         Share the hosted URL with the client:
-         https://career-transition-intake.onrender.com
+         Share the loading page URL with the client (not the Flask app URL directly):
+         https://career-transition-loading.onrender.com
+         The loading page handles cold-start waiting gracefully, then redirects to the form.
          The client fills in all ten sections and uploads their documents.
 
 Step 2 — Receive the email
@@ -91,8 +112,8 @@ Step 5 — Deliver
 
 ## Onboarding Questions (Client Intake)
 
-These questions are now captured automatically by the hosted intake form at
-https://career-transition-intake.onrender.com. The form collects structured answers and compiles
+These questions are now captured automatically by the hosted intake form (reached via
+https://career-transition-loading.onrender.com). The form collects structured answers and compiles
 them into a branded intake PDF that is emailed to gitonga@gmail.com alongside any uploaded
 documents. You do not need to ask these questions manually — read the intake PDF instead.
 
@@ -507,8 +528,9 @@ generate the transition plan PDF."
 
 Point to this SKILL.md and the process above will be followed without further prompting.
 
-If the intake form has not yet been submitted, send the client the hosted form link:
+If the intake form has not yet been submitted, send the client the loading page link
+(this handles cold-start gracefully and redirects to the form automatically):
 
 ```
-https://career-transition-intake.onrender.com
+https://career-transition-loading.onrender.com
 ```
