@@ -457,6 +457,27 @@ def send_email(pdf_path, data, upload_paths):
     })
 
 
+@app.route("/_health")
+def health():
+    """Lightweight liveness probe for the Render static-site loading page.
+
+    Returns a minimal JSON response immediately so the loading page can detect
+    when the app has finished its cold start and is ready to serve the form.
+    CORS headers are added for the companion static loading site.
+    """
+    resp = app.response_class(
+        response='{"status":"ok"}',
+        status=200,
+        mimetype="application/json",
+    )
+    loading_origin = os.environ.get(
+        "LOADING_SITE_ORIGIN", "https://career-transition-loading.onrender.com"
+    )
+    resp.headers["Access-Control-Allow-Origin"] = loading_origin
+    resp.headers["Access-Control-Allow-Methods"] = "GET"
+    return resp
+
+
 @app.route("/")
 def index():
     """Serve the onboarding intake form.

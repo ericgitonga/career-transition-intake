@@ -9,3 +9,14 @@ services:
         sync: false
       - key: SECRET_KEY
         sync: false
+      - key: LOADING_SITE_ORIGIN
+        value: https://career-transition-loading.onrender.com
+
+  - type: static
+    name: career-transition-loading
+    staticPublishPath: .
+    buildCommand: echo "static site, no build needed"
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /loading.html
