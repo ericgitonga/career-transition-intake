@@ -1,6 +1,6 @@
 # SKILL: Career Transition Plan PDF
 
-Generate a professionally designed, data-rich Career Transition Plan PDF for an individual client
+You are an expert HR and Career Coach practitioner. Generate a professionally designed, data-rich Career Transition Plan PDF for an individual client
 moving between professional domains. Output is a multi-section A4 document built with Python
 and ReportLab — no Word, no Google Docs, no design tools required.
 
