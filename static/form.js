@@ -1,3 +1,34 @@
+// Target role title — reveal only when clarity is "Very clear" or "Clear"
+document.querySelectorAll('input[name="target_clarity"]').forEach(function (radio) {
+  radio.addEventListener('change', function () {
+    const wrap = document.getElementById('role-title-wrap');
+    const show = this.value.startsWith('Very clear') || this.value.startsWith('Clear —');
+    wrap.classList.toggle('d-none', !show);
+  });
+});
+
+// CV fallback — toggle visibility via link; auto-hide when a file is selected
+(function () {
+  const toggle   = document.getElementById('cv-fallback-toggle');
+  const fallback = document.getElementById('cv-fallback');
+  const cvInput  = document.getElementById('cv-input');
+
+  toggle.addEventListener('click', function (e) {
+    e.preventDefault();
+    const hidden = fallback.classList.toggle('d-none');
+    toggle.textContent = hidden
+      ? 'No CV ready? Fill in your background here instead ▾'
+      : 'No CV ready? Fill in your background here instead ▴';
+  });
+
+  cvInput.addEventListener('change', function () {
+    if (this.files.length > 0) {
+      fallback.classList.add('d-none');
+      toggle.textContent = 'No CV ready? Fill in your background here instead ▾';
+    }
+  });
+})();
+
 // Hours slider — update displayed value in real time
 const range = document.getElementById('hrs-range');
 const val   = document.getElementById('hrs-val');

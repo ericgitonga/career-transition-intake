@@ -122,6 +122,17 @@ completes intake verbally or if you need to probe a thin answer from the form.
 
 ---
 
+### 0 — Personal & Background
+
+| # | Question | Why it matters |
+|---|---|---|
+| 0a | Which best describes you: job-seeker / employee, entrepreneur / business owner, freelancer / consultant, or other? | Determines plan framing — job-seekers need employer-facing assets; entrepreneurs need a pivot or launch strategy |
+| 0b | What field or industry are you transitioning *from*? | Anchors Section 1 ("Your Starting Point") and the "Strategic Insight" box; without this the opening narrative cannot be written |
+| 0c | LinkedIn profile URL | Direct access to professional history without requiring an export file; supplements or replaces CV |
+| 0d | Languages and proficiency level | Gating requirement for multilateral agencies, UN bodies, and international NGOs; localises org targets |
+
+---
+
 ### 1 — Motivation & Context
 
 | # | Question | Why it matters |
@@ -138,6 +149,7 @@ completes intake verbally or if you need to probe a thin answer from the form.
 | # | Question | Why it matters |
 |---|---|---|
 | 2a | How clear are you on the role you want? Scale: "I know the exact title" → "I know the general direction" → "I'm still exploring." | Determines how many target archetypes to present and how definitive the language should be |
+| 2a+ | *If "Very clear" or "Clear":* What is the specific role title you are targeting? | Shown conditionally; anchors the role archetypes section with a concrete title when the client already knows it |
 | 2b | Are there specific types of organisations you want to work for — NGO, tech company, government agency, multilateral, corporate, startup? | Directly shapes Section 2 target organisations and Section 4 networking targets |
 | 2c | Are there any roles, sectors, or organisation types you have already ruled out — even if they seem obvious choices? | Prevents wasted sections; avoids insulting the client's prior research |
 | 2d | Who do you admire or want to emulate in the target field — a person, a role, an organisation? | Yields concrete networking targets and helps locate role models for the visibility strategy |
@@ -153,6 +165,9 @@ completes intake verbally or if you need to probe a thin answer from the form.
 | 3c | What is your financial runway — how long can you invest in this transition before you need income from the new field? | Sets urgency level and informs certification budget; short runway → free-first cert path |
 | 3d | Are there geographic constraints — must stay in current city, open to relocation, remote-only preferred? | Localises target organisations and community recommendations |
 | 3e | Are there any personal or family commitments (childcare, caregiving, health) that affect your study schedule? | Prevents an unrealistic pace being built into the plan |
+| 3f | Work style preference in the target role — fully remote, hybrid, or in-office? | Filters out target organisations that don't match; shapes the networking and job-application strategy |
+| 3g | Willingness to travel for the role? | Determines whether international postings and field-based NGO roles are relevant options |
+| 3h | People management preference — want to manage a team, individual contributor, or open to either? | Directly governs which role archetypes are included in Section 2 and which are excluded |
 
 ---
 
@@ -202,6 +217,19 @@ completes intake verbally or if you need to probe a thin answer from the form.
 | 8a | Who will see this plan — is it for your own use, or will you share it with a sponsor, family member, or potential employer? | Affects tone and level of detail; shared plans need context that solo plans don't |
 | 8b | Are there any sections you'd like to emphasise — or anything you'd like us to skip? | Respects client autonomy; avoids building sections they'll never use |
 | 8c | Is there anything about your background you are particularly proud of, or anything you prefer not to highlight? | Feeds the narrative framing; some clients have non-linear histories that need careful handling |
+| 8d | What portfolio or work evidence do you already have — published reports, GitHub projects, conference talks, case studies? | The portfolio section builds *on* existing evidence, not from zero; knowing this prevents redundant or embarrassing recommendations |
+
+---
+
+### Professional Background (CV fallback — only if no CV uploaded)
+
+| # | Question | Why it matters |
+|---|---|---|
+| B1 | Current or most recent job title | Core input for Section 1 professional summary |
+| B2 | Industry or sector of that role | Required to frame the "transitioning from" narrative |
+| B3 | Total years of professional experience | Sets seniority framing and credibility level throughout |
+| B4 | Key skills in your own words | Client's self-perception of their strongest transferable assets; complements CV extraction |
+| B5 | Certifications already held | Prevents the plan from suggesting credentials the client already has |
 
 ---
 
@@ -209,14 +237,22 @@ completes intake verbally or if you need to probe a thin answer from the form.
 
 | Answer | Feeds into |
 |---|---|
+| Client type (job-seeker / entrepreneur / freelancer) | Plan framing throughout — job-seeker gets employer-facing assets; entrepreneur gets pivot/launch framing |
+| Current domain (transitioning from) | Section 1 professional summary and "Strategic Insight" box |
+| Languages and proficiency | Section 2 target organisations — international and multilateral roles; filtered out if no relevant language |
 | Motivation type (proactive vs reactive) | Opening tagline box, Section 12 closing |
 | Hours per week available | Semester card content volume |
 | Financial runway | Section 6 certification budget (free vs paid split) |
 | Geographic constraints | Section 2 target organisations |
+| Work style preference (remote / hybrid / office) | Section 2 target organisations — filtered to match stated preference |
+| Travel willingness | Section 2 role archetypes — field-based and international postings included or excluded |
+| Management preference (IC vs manager) | Section 2 role archetypes — managerial vs individual-contributor roles |
 | Target clarity level | Number of role archetypes in Section 2 |
+| Specific role title (if stated) | Primary archetype in Section 2; anchors skills gap analysis |
 | Learning style | Course format choices in Sections 5 & 6 |
 | Network warmth | Section 7 networking strategy depth |
 | Admired individuals / orgs | Section 7 target contacts |
+| Existing portfolio evidence | Section 8 portfolio — builds on existing pieces, does not duplicate them |
 | Fears and blockers | Section 12 "A Final Word" — address directly |
 
 ---
@@ -248,12 +284,20 @@ upload in the form, then request it directly before proceeding.
 
 ### From the intake PDF (read this first)
 
-The intake PDF is structured in nine sections matching the form. Extract and record:
+The intake PDF is structured in sections matching the form. Extract and record:
 
 - **Name, location, currency, timeline** — use verbatim on the cover page and throughout
+- **Client type** (job-seeker / entrepreneur / freelancer) — determines overall plan framing; entrepreneurs get pivot or launch strategy rather than job-search assets
+- **Current domain** (transitioning from) — write into Section 1 professional summary; essential for the "Strategic Insight" box
+- **LinkedIn profile URL** — open this before reading the CV; it often contains more current framing
+- **Languages and proficiency** — filter international and multilateral org targets; note as a differentiator if the target domain values specific languages
 - **Motivation type** (proactive / reactive) — sets tone of opening tagline box and Section 12
 - **Target domain and clarity level** — determines number of role archetypes in Section 2 and confidence of language throughout
+- **Specific role title** (if provided) — use as the primary archetype; treat all others as secondary options
 - **Preferred org types + ruled-out sectors** — directly populates Section 2 target organisation list; prunes irrelevant options
+- **Work style preference** (remote / hybrid / office) — filter Section 2 org targets to match; note explicitly if the client's preference conflicts with the target domain's norms
+- **Travel willingness** — include or exclude field-based and international postings accordingly
+- **Management preference** (IC vs manager) — determines role seniority framing and which archetypes are included
 - **Hours/week available** — scales semester card content (≤10 hrs → lighter load per semester; ≥25 hrs → fuller content)
 - **Financial runway** — if short (< 6 months), weight Section 6 heavily toward free/low-cost certifications; flag urgency in roadmap framing
 - **Geographic constraints** — localise all org targets, communities, and events to the stated geography
@@ -268,8 +312,10 @@ The intake PDF is structured in nine sections matching the form. Extract and rec
 - **Mentor status** — if no mentor wanted, remove mentorship sourcing tasks from tracker; if wanted, add sourcing steps to Semester 1
 - **Past attempts and blockers** — address the specific blocker directly in Section 12; do not offer generic encouragement
 - **Fears and biggest uncertainties** — name them explicitly in "A Final Word" and show how the plan mitigates each
+- **Existing portfolio evidence** — open Section 8 with what the client already has; build forward from there; never suggest a portfolio piece they have already produced
 - **Plan audience** — if shared with an employer or sponsor, increase context and polish; if solo, keep it direct and practical
 - **Sections to emphasise / background notes** — honour these explicitly; if client flagged something to handle with care, do so
+- **Professional background self-report** (if no CV uploaded) — treat current_title, current_industry, years_experience, key_skills, and existing_certs as the source of truth in place of the CV; note in the plan that figures are self-reported
 
 ### From the CV(s)
 - Most recent job title and employer

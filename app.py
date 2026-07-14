@@ -380,10 +380,21 @@ def build_pdf(d, path):
     sections = [
         ("Section 1 — Personal Information", [
             ("Full name",                             d.get("full_name")),
+            ("Client type",                           d.get("client_type")),
             ("City & Country",                        d.get("city_country")),
             ("Email address",                         d.get("client_email")),
+            ("LinkedIn profile URL",                  d.get("linkedin_url")),
             ("Preferred currency",                    d.get("currency")),
             ("Transition timeline preference",        d.get("timeline")),
+            ("Transitioning from (current domain)",   d.get("current_domain")),
+            ("Languages and proficiency",             d.get("languages")),
+        ]),
+        ("Professional Background (self-reported — if no CV uploaded)", [
+            ("Current / last job title",              d.get("current_title")),
+            ("Industry or sector of that role",       d.get("current_industry")),
+            ("Total years of professional experience",d.get("years_experience")),
+            ("Certifications already held",           d.get("existing_certs")),
+            ("Key skills (self-described)",           d.get("key_skills")),
         ]),
         ("Section 2 — Motivation & Context", [
             ("What is driving this transition?",                      d.get("motivation_type")),
@@ -394,6 +405,7 @@ def build_pdf(d, path):
             ("Target domain / field",                                 d.get("target_domain")),
             ("What specifically attracts you to this domain?",        d.get("attraction")),
             ("How clear are you on the role you want?",               d.get("target_clarity")),
+            ("Specific role title targeted",                          d.get("target_role_title")),
             ("Preferred organisation types",                          d.get("org_types")),
             ("Preferred organisation stage",                          d.get("org_stage")),
             ("Roles / sectors explicitly ruled out",                  d.get("ruled_out")),
@@ -406,6 +418,9 @@ def build_pdf(d, path):
             ("Financial runway",                                      d.get("financial_runway")),
             ("Geographic constraints",                                d.get("geography")),
             ("Personal / family commitments affecting schedule",      d.get("personal_commitments")),
+            ("Work style preference in target role",                  d.get("remote_preference")),
+            ("Willingness to travel",                                 d.get("travel_willingness")),
+            ("People management preference",                          d.get("management_preference")),
         ]),
         ("Section 5 — Financial Expectations", [
             ("Type of move targeted",                                 d.get("move_type")),
@@ -430,6 +445,7 @@ def build_pdf(d, path):
             ("Who will see this plan?",                               d.get("plan_audience")),
             ("Sections to emphasise",                                 d.get("emphasise")),
             ("Background notes / anything to handle with care",       d.get("background_notes")),
+            ("Existing portfolio or work evidence",                   d.get("existing_portfolio")),
         ]),
     ]
 
@@ -579,8 +595,12 @@ def submit():
 
     data = dict(
         full_name=full_name,
+        client_type=_clip(request.form.get("client_type"), 100),
+        current_domain=_clip(request.form.get("current_domain"), 300),
+        languages=_clip(request.form.get("languages"), 500),
         city_country=_clip(request.form.get("city_country"), 200),
         client_email=_clip(request.form.get("client_email"), 200),
+        linkedin_url=_clip(request.form.get("linkedin_url"), 300),
         currency=_clip(request.form.get("currency"), 50),
         timeline=_clip(request.form.get("timeline"), 100),
         motivation_type=_clip(request.form.get("motivation_type"), 200),
@@ -589,6 +609,7 @@ def submit():
         attraction=_clip(request.form.get("attraction"), 5000),
         target_domain=_clip(request.form.get("target_domain"), 500),
         target_clarity=_clip(request.form.get("target_clarity"), 200),
+        target_role_title=_clip(request.form.get("target_role_title"), 200),
         org_types=request.form.getlist("org_types"),
         org_stage=request.form.getlist("org_stage"),
         ruled_out=_clip(request.form.get("ruled_out"), 2000),
@@ -599,6 +620,9 @@ def submit():
         financial_runway=_clip(request.form.get("financial_runway"), 100),
         geography=_clip(request.form.get("geography"), 2000),
         personal_commitments=_clip(request.form.get("personal_commitments"), 2000),
+        remote_preference=_clip(request.form.get("remote_preference"), 200),
+        travel_willingness=_clip(request.form.get("travel_willingness"), 200),
+        management_preference=_clip(request.form.get("management_preference"), 200),
         move_type=_clip(request.form.get("move_type"), 200),
         income_floor=_clip(request.form.get("income_floor"), 2000),
         learning_format=request.form.getlist("learning_format"),
@@ -613,6 +637,12 @@ def submit():
         plan_audience=_clip(request.form.get("plan_audience"), 200),
         emphasise=_clip(request.form.get("emphasise"), 5000),
         background_notes=_clip(request.form.get("background_notes"), 5000),
+        existing_portfolio=_clip(request.form.get("existing_portfolio"), 5000),
+        current_title=_clip(request.form.get("current_title"), 200),
+        current_industry=_clip(request.form.get("current_industry"), 200),
+        years_experience=_clip(request.form.get("years_experience"), 100),
+        existing_certs=_clip(request.form.get("existing_certs"), 500),
+        key_skills=_clip(request.form.get("key_skills"), 2000),
     )
 
     # S-13: temp file path is cryptographically random; display name uses slug
