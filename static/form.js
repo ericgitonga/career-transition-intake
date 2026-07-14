@@ -92,6 +92,9 @@ document.querySelectorAll('input[name="target_clarity"]').forEach(function (radi
   });
 })();
 
+// Record when the page finished loading so we can measure time on form
+const _pageLoadedAt = Date.now();
+
 // Hours slider — update displayed value in real time
 const range = document.getElementById('hrs-range');
 const val   = document.getElementById('hrs-val');
@@ -102,6 +105,8 @@ document.getElementById('form').addEventListener('submit', async function (e) {
   e.preventDefault();
   const btn    = document.getElementById('submit-btn');
   const status = document.getElementById('status');
+
+  document.getElementById('time-on-form').value = Math.round((Date.now() - _pageLoadedAt) / 1000);
 
   btn.disabled = true;
   btn.textContent = 'Processing…';

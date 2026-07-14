@@ -615,6 +615,7 @@ def submit():
         full_name=full_name,
         client_type=_clip(request.form.get("client_type"), 100),
         client_type_other=_clip(request.form.get("client_type_other"), 500),
+        time_on_form_seconds=_clip(request.form.get("time_on_form_seconds", ""), 10),
         current_domain=_clip(request.form.get("current_domain"), 300),
         languages=_clip(request.form.get("languages"), 500),
         city_country=_clip(request.form.get("city_country"), 200),
@@ -714,9 +715,10 @@ def submit():
 
     # S-15: structured submission log for audit trail and abuse detection
     app.logger.info(
-        "Submission received: name=%s email=%s target=%s uploads=%d",
+        "Submission received: name=%s email=%s target=%s uploads=%d time_on_form=%s",
         data.get("full_name"), data.get("client_email"),
         data.get("target_domain"), len(uploads),
+        data.get("time_on_form_seconds", ""),
     )
 
     # When uploads are present, bundle everything into a ZIP; otherwise email
