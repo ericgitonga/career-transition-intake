@@ -415,10 +415,20 @@
             <textarea name="background_notes" class="form-control" rows="3" placeholder="e.g. I'm proud of my conflict-affected settings work. Prefer not to highlight the gap in 2019–2020."></textarea>
           </div>
           <div class="mb-3">
-            <label class="form-label">Existing portfolio or work evidence (optional)</label>
-            <textarea name="existing_portfolio" class="form-control" rows="4"
-              placeholder="e.g. Published 3 sustainability reports at current employer; GitHub with data analysis projects; case study on rural electrification financing; conference presentation on supply chain resilience"></textarea>
-            <div class="form-text">List anything you have already produced that can be showcased — the plan will build on it rather than start from zero.</div>
+            <label class="form-label">Do you have existing portfolio work or published work to share?</label>
+            <div class="form-check"><input class="form-check-input" type="radio" name="portfolio_has_work" value="yes" id="pw-yes"><label class="form-check-label" for="pw-yes">Yes</label></div>
+            <div class="form-check"><input class="form-check-input" type="radio" name="portfolio_has_work" value="no" id="pw-no"><label class="form-check-label" for="pw-no">No</label></div>
+          </div>
+          <div class="d-none mb-3" id="portfolio-links-wrap">
+            <label class="form-label">Paste links to your work</label>
+            <div class="form-text mb-2">GitHub, Behance, Dribbble, personal site, LinkedIn articles, published reports, Tableau Public, Kaggle, Medium — anything publicly accessible.</div>
+            <div id="portfolio-links-list">
+              <div class="input-group mb-2 portfolio-link-row">
+                <input type="url" name="portfolio_links" class="form-control" placeholder="https://">
+                <button type="button" class="btn btn-outline-secondary remove-link" tabindex="-1" title="Remove this link">×</button>
+              </div>
+            </div>
+            <button type="button" id="add-portfolio-link" class="btn btn-sm btn-outline-secondary mt-1">+ Add another link</button>
           </div>
           <div class="mb-3">
             <label class="form-label">Anything else you'd like your consultant to know? (optional)</label>

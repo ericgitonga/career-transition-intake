@@ -7,6 +7,37 @@ document.querySelectorAll('input[name="target_clarity"]').forEach(function (radi
   });
 });
 
+// Portfolio links — show/hide based on yes/no radio; dynamic add/remove rows
+(function () {
+  const wrap = document.getElementById('portfolio-links-wrap');
+  const list = document.getElementById('portfolio-links-list');
+
+  document.querySelectorAll('input[name="portfolio_has_work"]').forEach(function (radio) {
+    radio.addEventListener('change', function () {
+      wrap.classList.toggle('d-none', this.value !== 'yes');
+    });
+  });
+
+  document.getElementById('add-portfolio-link').addEventListener('click', function () {
+    const row = document.createElement('div');
+    row.className = 'input-group mb-2 portfolio-link-row';
+    row.innerHTML =
+      '<input type="url" name="portfolio_links" class="form-control" placeholder="https://">' +
+      '<button type="button" class="btn btn-outline-secondary remove-link" tabindex="-1" title="Remove this link">×</button>';
+    list.appendChild(row);
+    row.querySelector('input').focus();
+  });
+
+  list.addEventListener('click', function (e) {
+    if (e.target.classList.contains('remove-link')) {
+      const rows = list.querySelectorAll('.portfolio-link-row');
+      if (rows.length > 1) {
+        e.target.closest('.portfolio-link-row').remove();
+      }
+    }
+  });
+})();
+
 // CV fallback — toggle visibility via link; auto-hide when a file is selected
 (function () {
   const toggle   = document.getElementById('cv-fallback-toggle');

@@ -217,7 +217,7 @@ completes intake verbally or if you need to probe a thin answer from the form.
 | 8a | Who will see this plan — is it for your own use, or will you share it with a sponsor, family member, or potential employer? | Affects tone and level of detail; shared plans need context that solo plans don't |
 | 8b | Are there any sections you'd like to emphasise — or anything you'd like us to skip? | Respects client autonomy; avoids building sections they'll never use |
 | 8c | Is there anything about your background you are particularly proud of, or anything you prefer not to highlight? | Feeds the narrative framing; some clients have non-linear histories that need careful handling |
-| 8d | What portfolio or work evidence do you already have — published reports, GitHub projects, conference talks, case studies? | The portfolio section builds *on* existing evidence, not from zero; knowing this prevents redundant or embarrassing recommendations |
+| 8d | Do you have existing portfolio work or published work to share? (Yes / No) — if Yes, paste links (GitHub, Behance, Dribbble, personal site, LinkedIn articles, Tableau Public, Kaggle, Medium, published reports, etc.) | The portfolio section builds *on* existing evidence, not from zero; links give the consultant direct access to assess quality and framing |
 | 8e | Is there anything else you'd like your consultant to know — context, timing, a specific opportunity, or anything not captured elsewhere? | Catch-all for information that doesn't fit any structured question; often surfaces the most important context |
 
 ---
@@ -255,7 +255,7 @@ completes intake verbally or if you need to probe a thin answer from the form.
 | Learning style | Course format choices in Sections 5 & 6 |
 | Network warmth | Section 7 networking strategy depth |
 | Admired individuals / orgs | Section 7 target contacts |
-| Existing portfolio evidence | Section 8 portfolio — builds on existing pieces, does not duplicate them |
+| Portfolio links (if yes) | Section 8 portfolio — open and review each link; build on existing pieces; do not duplicate them |
 | Fears and blockers | Section 12 "A Final Word" — address directly |
 | Anything else (free-form) | Read carefully before generating — often contains the most important context; surface it in whichever section it is most relevant to |
 
@@ -316,7 +316,7 @@ The intake PDF is structured in sections matching the form. Extract and record:
 - **Mentor status** — if no mentor wanted, remove mentorship sourcing tasks from tracker; if wanted, add sourcing steps to Semester 1
 - **Past attempts and blockers** — address the specific blocker directly in Section 12; do not offer generic encouragement
 - **Fears and biggest uncertainties** — name them explicitly in "A Final Word" and show how the plan mitigates each
-- **Existing portfolio evidence** — open Section 8 with what the client already has; build forward from there; never suggest a portfolio piece they have already produced
+- **Portfolio links** — if `portfolio_has_work` is "yes", open each link and review before generating Section 8; build forward from what exists; never suggest a piece the client has already produced
 - **Plan audience** — if shared with an employer or sponsor, increase context and polish; if solo, keep it direct and practical
 - **Sections to emphasise / background notes** — honour these explicitly; if client flagged something to handle with care, do so
 - **Anything else (free-form)** — read this field before generating; it often contains timing context, a specific opportunity, or a constraint that completely changes the framing. Surface it in the most relevant plan section rather than ignoring it.
