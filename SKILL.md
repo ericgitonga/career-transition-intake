@@ -161,7 +161,7 @@ completes intake verbally or if you need to probe a thin answer from the form.
 
 | # | Question | Why it matters |
 |---|---|---|
-| 3a | Are you currently employed? If yes: transitioning while employed, or have you left / are about to leave? | Determines whether the plan needs to fit around a day job (evenings/weekends) or can be full-time |
+| 3a | **Employment / business status (conditional):** Job-seekers see "Are you currently employed?" (Yes / No — left / No — about to leave); if Yes, a follow-up asks whether they are transitioning while employed or planning to leave. Entrepreneurs and freelancers see "Are you currently running your business full-time?" instead. | Determines whether the plan needs to fit around a day job (evenings/weekends) or can be full-time; for entrepreneurs, sets the business context for the transition |
 | 3b | Roughly how many hours per week are realistically available for study, networking, and portfolio work? | Directly sizes semester content — 5 hrs/week ≠ 20 hrs/week |
 | 3c | What is your financial runway — how long can you invest in this transition before you need income from the new field? | Sets urgency level and informs certification budget; short runway → free-first cert path |
 | 3d | Are there geographic constraints — must stay in current city, open to relocation, remote-only preferred? | Localises target organisations and community recommendations |
@@ -306,7 +306,7 @@ The intake PDF is structured in sections matching the form. Extract and record:
 - **Hours/week available** — scales semester card content (≤10 hrs → lighter load per semester; ≥25 hrs → fuller content)
 - **Financial runway** — if short (< 6 months), weight Section 6 heavily toward free/low-cost certifications; flag urgency in roadmap framing
 - **Geographic constraints** — localise all org targets, communities, and events to the stated geography
-- **Employment status** — if transitioning while employed, semester plans must fit evenings/weekends; note this explicitly in each semester card
+- **Employment / business status** — for job-seekers: if transitioning while employed, semester plans must fit evenings/weekends; note this in each semester card. For entrepreneurs/freelancers, `entrepreneur_status` indicates whether full-time, part-time, or exploring a new area — frame the plan accordingly
 - **Move type** (lateral / step up / step back) — frames the risk narrative in Section 10 and milestone sequencing in Section 11
 - **Income floor** — filters out transition paths that are financially unworkable; note in Section 6 budget
 - **Preferred learning formats** — every course recommendation in Sections 5 and 6 must match the stated format preferences

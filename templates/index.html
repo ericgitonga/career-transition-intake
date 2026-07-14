@@ -200,12 +200,50 @@
           </div>
           <div class="mb-3">
             <label class="form-label">Preferred organisation stage (select all that apply)</label>
-            <div class="row">
-              {% for v in ["Early-stage startup (seed / Series A)","Growth-stage startup (Series B+)","Established / mid-size organisation","Large / mature organisation (1 000+ staff)","No preference"] %}
-              <div class="col-md-6">
-                <div class="form-check"><input class="form-check-input" type="checkbox" name="org_stage" value="{{ v }}" id="os{{ loop.index }}"><label class="form-check-label" for="os{{ loop.index }}">{{ v }}</label></div>
+            <div class="form-text mb-2">This refers to the size and maturity of the organisation you'd like to work for or with.</div>
+            <div class="row g-2">
+              <div class="col-12">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="org_stage" value="Early-stage startup (seed / Series A)" id="os1">
+                  <label class="form-check-label" for="os1">
+                    <strong>Early-stage startup</strong> (seed / Series A) —
+                    <span class="text-muted">typically 2–50 people, still finding product-market fit, fast-changing, expect to wear multiple hats</span>
+                  </label>
+                </div>
               </div>
-              {% endfor %}
+              <div class="col-12">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="org_stage" value="Growth-stage startup (Series B+)" id="os2">
+                  <label class="form-check-label" for="os2">
+                    <strong>Growth-stage startup</strong> (Series B+) —
+                    <span class="text-muted">50–300+ staff, proven model being scaled, building formal processes, high-growth environment</span>
+                  </label>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="org_stage" value="Established / mid-size organisation" id="os3">
+                  <label class="form-check-label" for="os3">
+                    <strong>Established / mid-size organisation</strong> —
+                    <span class="text-muted">100–999 staff, defined teams and processes, stable environment with room to specialise</span>
+                  </label>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="org_stage" value="Large / mature organisation (1 000+ staff)" id="os4">
+                  <label class="form-check-label" for="os4">
+                    <strong>Large / mature organisation</strong> (1 000+ staff) —
+                    <span class="text-muted">enterprise scale, formal hierarchies, strong brand presence, typically slower to change</span>
+                  </label>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="org_stage" value="No preference" id="os5">
+                  <label class="form-check-label" for="os5">No preference</label>
+                </div>
+              </div>
             </div>
           </div>
           <div class="mb-3">
@@ -229,16 +267,24 @@
       </h2>
       <div id="s4" class="accordion-collapse collapse">
         <div class="accordion-body">
-          <div class="mb-3">
+          <!-- Employment block — shown for job-seekers/employees; hidden for entrepreneurs/freelancers -->
+          <div id="employment-block" class="mb-3">
             <label class="form-label">Are you currently employed?</label>
             {% for v in ["Yes","No — I have left / been made redundant","No — about to leave"] %}
             <div class="form-check"><input class="form-check-input" type="radio" name="employed" value="{{ v }}" id="em{{ loop.index }}"><label class="form-check-label" for="em{{ loop.index }}">{{ v }}</label></div>
             {% endfor %}
           </div>
-          <div class="mb-3">
-            <label class="form-label">If employed — which best describes your situation?</label>
-            {% for v in ["Transitioning while employed (evenings / weekends only)","Planning to leave soon to focus full-time on the transition","Not applicable"] %}
-            <div class="form-check"><input class="form-check-input" type="radio" name="employed_status" value="{{ v }}" id="es{{ loop.index }}" {% if v == "Not applicable" %}checked{% endif %}><label class="form-check-label" for="es{{ loop.index }}">{{ v }}</label></div>
+          <div id="employed-status-block" class="mb-3 d-none">
+            <label class="form-label">Which best describes your situation?</label>
+            {% for v in ["Transitioning while employed (evenings / weekends only)","Planning to leave soon to focus full-time on the transition"] %}
+            <div class="form-check"><input class="form-check-input" type="radio" name="employed_status" value="{{ v }}" id="es{{ loop.index }}"><label class="form-check-label" for="es{{ loop.index }}">{{ v }}</label></div>
+            {% endfor %}
+          </div>
+          <!-- Entrepreneur block — shown for business owners and freelancers; hidden otherwise -->
+          <div id="entrepreneur-block" class="mb-3 d-none">
+            <label class="form-label">Are you currently running your business full-time?</label>
+            {% for v in ["Yes — full-time entrepreneur / business owner","Part-time / side business alongside other commitments","In the process of starting up","No — exploring a new business area"] %}
+            <div class="form-check"><input class="form-check-input" type="radio" name="entrepreneur_status" value="{{ v }}" id="ens{{ loop.index }}"><label class="form-check-label" for="ens{{ loop.index }}">{{ v }}</label></div>
             {% endfor %}
           </div>
           <div class="mb-3">

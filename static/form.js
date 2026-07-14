@@ -1,3 +1,32 @@
+// Client type — show employment block for job-seekers, entrepreneur block for business owners / freelancers
+(function () {
+  const empBlock  = document.getElementById('employment-block');
+  const entBlock  = document.getElementById('entrepreneur-block');
+  const esBlock   = document.getElementById('employed-status-block');
+
+  function applyClientType(val) {
+    const isEntrepreneur = val === 'Entrepreneur or business owner' || val === 'Freelancer or independent consultant';
+    empBlock.classList.toggle('d-none', isEntrepreneur);
+    entBlock.classList.toggle('d-none', !isEntrepreneur);
+    if (isEntrepreneur) esBlock.classList.add('d-none');
+  }
+
+  document.querySelectorAll('input[name="client_type"]').forEach(function (radio) {
+    radio.addEventListener('change', function () { applyClientType(this.value); });
+    if (radio.checked) applyClientType(radio.value);
+  });
+})();
+
+// Employment status follow-up — only show when "Yes" (currently employed) is selected
+(function () {
+  const esBlock = document.getElementById('employed-status-block');
+  document.querySelectorAll('input[name="employed"]').forEach(function (radio) {
+    radio.addEventListener('change', function () {
+      esBlock.classList.toggle('d-none', this.value !== 'Yes');
+    });
+  });
+})();
+
 // Target role title — reveal only when clarity is "Very clear" or "Clear"
 document.querySelectorAll('input[name="target_clarity"]').forEach(function (radio) {
   radio.addEventListener('change', function () {

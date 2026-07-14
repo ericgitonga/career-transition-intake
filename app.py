@@ -306,6 +306,31 @@ def _qa(question, value):
     return [Paragraph(question, _label), Paragraph(text, _ans), Spacer(1, 4)]
 
 
+def _sec4_pairs(d):
+    """Return the Section 4 Q&A pairs, choosing employment vs entrepreneur questions based on client type."""
+    is_entrepreneur = d.get("client_type", "") in (
+        "Entrepreneur or business owner",
+        "Freelancer or independent consultant",
+    )
+    pairs = []
+    if is_entrepreneur:
+        pairs.append(("Business operating status", d.get("entrepreneur_status")))
+    else:
+        pairs.append(("Currently employed?", d.get("employed")))
+        if d.get("employed") == "Yes":
+            pairs.append(("Transitioning while working or planning to leave?", d.get("employed_status")))
+    pairs += [
+        ("Hours per week available for transition work",          d.get("hours_per_week")),
+        ("Financial runway",                                      d.get("financial_runway")),
+        ("Geographic constraints",                                d.get("geography")),
+        ("Personal / family commitments affecting schedule",      d.get("personal_commitments")),
+        ("Work style preference in target role",                  d.get("remote_preference")),
+        ("Willingness to travel",                                 d.get("travel_willingness")),
+        ("People management preference",                          d.get("management_preference")),
+    ]
+    return pairs
+
+
 def build_pdf(d, path):
     """Generate the branded intake PDF from the submitted form data.
 
@@ -411,17 +436,7 @@ def build_pdf(d, path):
             ("Roles / sectors explicitly ruled out",                  d.get("ruled_out")),
             ("People or organisations you admire in the target field",d.get("admired")),
         ]),
-        ("Section 4 — Constraints & Capacity", [
-            ("Currently employed?",                                   d.get("employed")),
-            ("If employed — transitioning while working or leaving?", d.get("employed_status")),
-            ("Hours per week available for transition work",          d.get("hours_per_week")),
-            ("Financial runway",                                      d.get("financial_runway")),
-            ("Geographic constraints",                                d.get("geography")),
-            ("Personal / family commitments affecting schedule",      d.get("personal_commitments")),
-            ("Work style preference in target role",                  d.get("remote_preference")),
-            ("Willingness to travel",                                 d.get("travel_willingness")),
-            ("People management preference",                          d.get("management_preference")),
-        ]),
+        ("Section 4 — Constraints & Capacity", _sec4_pairs(d)),
         ("Section 5 — Financial Expectations", [
             ("Type of move targeted",                                 d.get("move_type")),
             ("Minimum income level to protect",                       d.get("income_floor")),
@@ -618,6 +633,7 @@ def submit():
         admired=_clip(request.form.get("admired"), 2000),
         employed=_clip(request.form.get("employed"), 100),
         employed_status=_clip(request.form.get("employed_status"), 200),
+        entrepreneur_status=_clip(request.form.get("entrepreneur_status"), 200),
         hours_per_week=_clip(request.form.get("hours_per_week", "10"), 10) + " hrs/week",
         financial_runway=_clip(request.form.get("financial_runway"), 100),
         geography=_clip(request.form.get("geography"), 2000),
