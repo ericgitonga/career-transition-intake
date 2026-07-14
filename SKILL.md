@@ -101,7 +101,8 @@ Step 3 — Download and read
 
 Step 4 — Generate the plan
          Run the invocation below. The intake PDF replaces the manual Q&A; the
-         uploaded documents supply the factual raw material.
+         uploaded documents supply the factual raw material. If portfolio_has_work
+         is "yes", fetch each portfolio link with WebFetch before drafting Section 8.
 
 Step 5 — Deliver
          Email [initials]_transition_plan.pdf to the client. Keep generate_plan.py
@@ -316,7 +317,7 @@ The intake PDF is structured in sections matching the form. Extract and record:
 - **Mentor status** — if no mentor wanted, remove mentorship sourcing tasks from tracker; if wanted, add sourcing steps to Semester 1
 - **Past attempts and blockers** — address the specific blocker directly in Section 12; do not offer generic encouragement
 - **Fears and biggest uncertainties** — name them explicitly in "A Final Word" and show how the plan mitigates each
-- **Portfolio links** — if `portfolio_has_work` is "yes", open each link and review before generating Section 8; build forward from what exists; never suggest a piece the client has already produced
+- **Portfolio links** — if `portfolio_has_work` is "yes", **fetch each URL with WebFetch before drafting Section 8**. For each link: note the platform, read the content, extract the domain area, assess quality signal and recency, and identify what the piece demonstrates. Use this directly in the portfolio section — do not rely on the client's description alone. If a link returns a login wall, 403, or 404, note it as inaccessible and proceed with the remaining links. LinkedIn profile URLs frequently block automated access; treat them as unreliable and use the LinkedIn export file or URL as a secondary reference instead.
 - **Plan audience** — if shared with an employer or sponsor, increase context and polish; if solo, keep it direct and practical
 - **Sections to emphasise / background notes** — honour these explicitly; if client flagged something to handle with care, do so
 - **Anything else (free-form)** — read this field before generating; it often contains timing context, a specific opportunity, or a constraint that completely changes the framing. Surface it in the most relevant plan section rather than ignoring it.
