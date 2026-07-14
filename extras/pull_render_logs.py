@@ -2,15 +2,14 @@
 Pull submission logs from Render and populate extras/onboard_metrics.xlsx (Sheet: intake).
 
 Setup:
-    pip install requests openpyxl
-    export RENDER_API_KEY=rnd_...            # Render dashboard → Account → API Keys
-    export RENDER_SERVICE_ID=srv_...         # optional — taken from Render dashboard URL
-                                             # if omitted, script searches by service name
+    conda run -n ds pip install requests openpyxl
+    export RENDER_API_KEY=rnd_...            # Render dashboard → Account Settings → API Keys
+    export RENDER_SERVICE_ID=srv-d97lh5etrd3s7399aqc0   # career-transition-intake service ID
 
 Usage:
-    python extras/pull_render_logs.py              # last 30 days
-    python extras/pull_render_logs.py --days 7     # last 7 days
-    python extras/pull_render_logs.py --since 2026-07-01   # from a specific date
+    conda run -n ds python extras/pull_render_logs.py              # last 30 days
+    conda run -n ds python extras/pull_render_logs.py --days 7     # last 7 days
+    conda run -n ds python extras/pull_render_logs.py --since 2026-07-01
 """
 
 import argparse
@@ -23,17 +22,17 @@ from pathlib import Path
 try:
     import requests
 except ImportError:
-    sys.exit("Missing dependency — run: pip install requests openpyxl")
+    sys.exit("Missing dependency — run: conda run -n ds pip install requests openpyxl")
 
 try:
     import openpyxl
     from openpyxl.styles import Alignment, Font, PatternFill
     from openpyxl.utils import get_column_letter
 except ImportError:
-    sys.exit("Missing dependency — run: pip install requests openpyxl")
+    sys.exit("Missing dependency — run: conda run -n ds pip install requests openpyxl")
 
-XLSX        = Path(__file__).parent / "onboard_metrics.xlsx"
-API_BASE    = "https://api.render.com/v1"
+XLSX            = Path(__file__).parent / "onboard_metrics.xlsx"
+API_BASE        = "https://api.render.com/v1"
 INTAKE_SHEET    = "intake"
 PROCESSED_SHEET = "processed"
 
@@ -63,6 +62,8 @@ PROCESSED_COLS = [
     "Notes",
 ]
 
+ANSI = re.compile(r"\x1b\[[0-9;]*m")
+
 
 # ── Render API helpers ────────────────────────────────────────────────────────
 
@@ -77,51 +78,80 @@ def _auth_headers():
     return {"Authorization": f"Bearer {key}", "Accept": "application/json"}
 
 
-def _find_service_id(headers):
-    sid = os.environ.get("RENDER_SERVICE_ID", "").strip()
-    if sid:
-        return sid
-    print("RENDER_SERVICE_ID not set — searching services for 'career-transition' …")
+def _get_owner_and_service(headers):
+    """Return (owner_id, service_id) for the career-transition-intake service."""
+    service_id = os.environ.get("RENDER_SERVICE_ID", "").strip()
+    owner_id   = os.environ.get("RENDER_OWNER_ID", "").strip()
+
     r = requests.get(f"{API_BASE}/services?limit=100", headers=headers, timeout=15)
     r.raise_for_status()
-    payload = r.json()
-    # Render wraps each item: [{"service": {...}}, ...]  or returns flat list
-    items = payload if isinstance(payload, list) else payload.get("services", [])
+    items = r.json() if isinstance(r.json(), list) else r.json().get("services", [])
+
     for item in items:
-        svc = item.get("service", item)
-        name = svc.get("name", "") or svc.get("slug", "")
-        if "career-transition" in name.lower():
-            found_id = svc.get("id", "")
-            print(f"  Found service: {name!r} → {found_id}")
-            return found_id
-    sys.exit(
-        "Could not find a service matching 'career-transition'.\n"
-        "Set RENDER_SERVICE_ID=srv_... (visible in Render dashboard URL) and retry."
-    )
+        svc  = item.get("service", item)
+        name = svc.get("name", "")
+        sid  = svc.get("id", "")
+        oid  = svc.get("ownerId", "")
+
+        if not service_id and "career-transition-intake" in name.lower():
+            service_id = sid
+            print(f"  Found service: {name!r} → {sid}")
+
+        if not owner_id and sid == service_id:
+            owner_id = oid
+
+        # Pick up owner from any service if still unknown
+        if not owner_id and oid:
+            owner_id = oid
+
+    if not service_id:
+        sys.exit(
+            "Could not find 'career-transition-intake' service.\n"
+            "Set RENDER_SERVICE_ID=srv-... (visible in Render dashboard URL) and retry."
+        )
+    if not owner_id:
+        sys.exit("Could not determine owner/workspace ID. Set RENDER_OWNER_ID=tea-... and retry.")
+
+    return owner_id, service_id
 
 
-def _fetch_logs(service_id, since_dt, until_dt, headers):
-    """Fetch log entries; tries both known Render log API shapes."""
-    params = {
-        "startTime": since_dt.isoformat(),
-        "endTime":   until_dt.isoformat(),
-        "limit":     1000,
-    }
-    # Shape 1: /v1/logs?resource[id]=...&resource[type]=service  (newer API)
-    p1 = {**params, "resource[id]": service_id, "resource[type]": "service"}
-    r = requests.get(f"{API_BASE}/logs", headers=headers, params=p1, timeout=30)
-    if r.ok:
-        data = r.json()
-        entries = data.get("logs", data.get("items", data if isinstance(data, list) else []))
-        if entries:
-            return entries
-
-    # Shape 2: /v1/services/{id}/logs  (older API)
-    p2 = {**params, "serviceId": service_id}
-    r = requests.get(f"{API_BASE}/services/{service_id}/logs", headers=headers, params=p2, timeout=30)
+def _fetch_logs_page(owner_id, service_id, start, end, headers):
+    """Fetch one page of app logs filtered to Submission lines."""
+    params = [
+        ("ownerId",   owner_id),
+        ("resource",  service_id),
+        ("startTime", start),
+        ("endTime",   end),
+        ("type",      "app"),
+        ("text",      "Submission"),
+        ("limit",     "100"),
+        ("direction", "backward"),
+    ]
+    r = requests.get(f"{API_BASE}/logs", headers=headers, params=params, timeout=30)
     r.raise_for_status()
-    data = r.json()
-    return data.get("logs", data.get("items", data if isinstance(data, list) else []))
+    return r.json()
+
+
+def _fetch_all_submission_logs(owner_id, service_id, since_dt, until_dt, headers):
+    """Paginate through all Submission log lines in the given window."""
+    start = since_dt.isoformat()
+    end   = until_dt.isoformat()
+    entries = []
+    pages   = 0
+
+    while pages < 50:
+        data = _fetch_logs_page(owner_id, service_id, start, end, headers)
+        batch = data.get("logs") or []
+        entries.extend(batch)
+        pages += 1
+
+        if not data.get("hasMore") or not batch:
+            break
+        # Render paginates backward: use nextStartTime / nextEndTime for next page
+        end   = data.get("nextEndTime",   end)
+        start = data.get("nextStartTime", start)
+
+    return entries
 
 
 # ── Log parsing ───────────────────────────────────────────────────────────────
@@ -143,13 +173,12 @@ RE_COMPLETE = re.compile(
 
 
 def _parse_ts(entry):
-    for key in ("timestamp", "time", "createdAt", "logged_at", "date"):
-        raw = entry.get(key)
-        if raw:
-            try:
-                return datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
-            except ValueError:
-                pass
+    raw = entry.get("timestamp") or entry.get("time") or entry.get("createdAt") or ""
+    if raw:
+        try:
+            return datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+        except ValueError:
+            pass
     return None
 
 
@@ -158,7 +187,7 @@ def _parse_entries(entries):
     complete_list = []
 
     for e in entries:
-        msg = e.get("message") or e.get("text") or e.get("log") or ""
+        msg = ANSI.sub("", e.get("message") or "").strip()
         dt  = _parse_ts(e)
 
         m = RE_RECEIVED.search(msg)
@@ -176,17 +205,16 @@ def _parse_entries(entries):
 
     rows = []
     used = set()
+
     for recv in received_list:
         name    = recv["name"]
         dt_recv = recv["_dt"]
-        proc_secs  = ""
+        proc_secs    = ""
         email_status = ""
         attachment   = ""
 
         for i, comp in enumerate(complete_list):
-            if i in used:
-                continue
-            if comp["name"] != name:
+            if i in used or comp["name"] != name:
                 continue
             dt_comp = comp.get("_dt")
             if dt_recv and dt_comp and abs((dt_comp - dt_recv).total_seconds()) < 600:
@@ -200,17 +228,18 @@ def _parse_entries(entries):
         tof_min = round(int(tof_raw) / 60, 1) if tof_raw else ""
 
         rows.append({
-            "Submission Date":       dt_recv.strftime("%Y-%m-%d") if dt_recv else "",
-            "Submission Time (UTC)": dt_recv.strftime("%H:%M:%S") if dt_recv else "",
-            "Client Name":           name,
-            "Client Email":          recv.get("email", ""),
-            "Target Domain":         recv.get("target", ""),
-            "Uploads":               int(recv.get("uploads", 0)),
-            "Time on Form (min)":    tof_min,
-            "Server Processing (sec)": proc_secs,
-            "Email Status":          email_status,
-            "Attachment":            attachment,
+            "Submission Date":           dt_recv.strftime("%Y-%m-%d") if dt_recv else "",
+            "Submission Time (UTC)":     dt_recv.strftime("%H:%M:%S") if dt_recv else "",
+            "Client Name":               name,
+            "Client Email":              recv.get("email", ""),
+            "Target Domain":             recv.get("target", ""),
+            "Uploads":                   int(recv.get("uploads", 0)),
+            "Time on Form (min)":        tof_min,
+            "Server Processing (sec)":   proc_secs,
+            "Email Status":              email_status,
+            "Attachment":                attachment,
         })
+
     return rows
 
 
@@ -230,16 +259,15 @@ def _ensure_sheet(wb, name, cols):
         ws = wb.create_sheet(name)
         for ci, col in enumerate(cols, 1):
             c = ws.cell(1, ci, col)
-            c.font  = HEADER_FONT
-            c.fill  = HEADER_FILL
+            c.font      = HEADER_FONT
+            c.fill      = HEADER_FILL
             c.alignment = Alignment(horizontal="center", wrap_text=True)
-        ws.freeze_panes = "A2"
+        ws.freeze_panes    = "A2"
         ws.row_dimensions[1].height = 30
     return wb[name]
 
 
 def _existing_keys(ws):
-    """Return set of (date, name) already in the sheet to avoid duplicate rows."""
     keys = set()
     for row in ws.iter_rows(min_row=2, values_only=True):
         if row[0] and row[2]:
@@ -274,7 +302,8 @@ def _autofit(ws):
 
 def main():
     parser = argparse.ArgumentParser(description="Pull Render submission logs → onboard_metrics.xlsx")
-    parser.add_argument("--days",  type=int, default=30, help="How many days back to fetch (default: 30)")
+    parser.add_argument("--days",  type=int, default=30,
+                        help="Days back to fetch (default: 30)")
     parser.add_argument("--since", help="Fetch from this date, e.g. 2026-07-01 (overrides --days)")
     args = parser.parse_args()
 
@@ -286,25 +315,33 @@ def main():
     )
 
     print(f"Fetching Render logs from {since.date()} to {until.date()} …")
-    headers    = _auth_headers()
-    service_id = _find_service_id(headers)
-    entries    = _fetch_logs(service_id, since, until, headers)
-    print(f"  {len(entries)} log line(s) retrieved")
+    headers            = _auth_headers()
+    owner_id, service_id = _get_owner_and_service(headers)
+    print(f"  Owner:   {owner_id}")
+    print(f"  Service: {service_id}")
+
+    entries = _fetch_all_submission_logs(owner_id, service_id, since, until, headers)
+    print(f"  {len(entries)} Submission log line(s) found")
 
     rows = _parse_entries(entries)
     print(f"  {len(rows)} submission event(s) parsed")
 
-    wb = _load_or_create()
-    ws_intake    = _ensure_sheet(wb, INTAKE_SHEET,    INTAKE_COLS)
+    wb       = _load_or_create()
+    ws       = _ensure_sheet(wb, INTAKE_SHEET,    INTAKE_COLS)
     _ensure_sheet(wb, PROCESSED_SHEET, PROCESSED_COLS)
 
-    existing = _existing_keys(ws_intake)
-    added    = _append_rows(ws_intake, rows, INTAKE_COLS, existing)
+    existing = _existing_keys(ws)
+    added    = _append_rows(ws, rows, INTAKE_COLS, existing)
 
-    _autofit(ws_intake)
+    _autofit(ws)
     _autofit(wb[PROCESSED_SHEET])
     wb.save(XLSX)
     print(f"  {added} new row(s) written → {XLSX}")
+
+    if len(entries) == 0:
+        print("\n  Note: no submissions found in this window.")
+        print("  The form logs 'Submission received:' on each successful POST.")
+        print("  Retry after the first client submits the live form.")
 
 
 if __name__ == "__main__":
