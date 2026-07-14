@@ -406,6 +406,7 @@ def build_pdf(d, path):
         ("Section 1 — Personal Information", [
             ("Full name",                             d.get("full_name")),
             ("Client type",                           d.get("client_type")),
+            ("Client type — Other (details)",         d.get("client_type_other")),
             ("City & Country",                        d.get("city_country")),
             ("Email address",                         d.get("client_email")),
             ("LinkedIn profile URL",                  d.get("linkedin_url")),
@@ -613,6 +614,7 @@ def submit():
     data = dict(
         full_name=full_name,
         client_type=_clip(request.form.get("client_type"), 100),
+        client_type_other=_clip(request.form.get("client_type_other"), 500),
         current_domain=_clip(request.form.get("current_domain"), 300),
         languages=_clip(request.form.get("languages"), 500),
         city_country=_clip(request.form.get("city_country"), 200),

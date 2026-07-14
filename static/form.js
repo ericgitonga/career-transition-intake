@@ -4,11 +4,14 @@
   const entBlock  = document.getElementById('entrepreneur-block');
   const esBlock   = document.getElementById('employed-status-block');
 
+  const otherWrap = document.getElementById('client-type-other-wrap');
+
   function applyClientType(val) {
     const isEntrepreneur = val === 'Entrepreneur or business owner' || val === 'Freelancer or independent consultant';
     empBlock.classList.toggle('d-none', isEntrepreneur);
     entBlock.classList.toggle('d-none', !isEntrepreneur);
     if (isEntrepreneur) esBlock.classList.add('d-none');
+    otherWrap.classList.toggle('d-none', val !== 'Other');
   }
 
   document.querySelectorAll('input[name="client_type"]').forEach(function (radio) {

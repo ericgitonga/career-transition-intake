@@ -60,6 +60,7 @@ Users must never see backend internals. This applies at every layer of the stack
 
 ### When making changes to the form or server
 
+- Any question that includes an "Other" option must also include a free-text clarification field that is revealed (via JS `d-none` toggle) when "Other" is selected. The field name follows the pattern `<question_name>_other`. Wire it through `_clip()` in `submit()` and include it in the PDF section for that question.
 - Any change to form fields must also be reviewed against the input-length limits in `_clip()` calls in `submit()`.
 - Any new file upload field must route through `_safe_suffix()`.
 - Any new route that accepts POST data must be decorated with the CSRF-exempt decorator or protected by the existing `CSRFProtect(app)` instance.
@@ -127,7 +128,7 @@ completes intake verbally or if you need to probe a thin answer from the form.
 
 | # | Question | Why it matters |
 |---|---|---|
-| 0a | Which best describes you: job-seeker / employee, entrepreneur / business owner, freelancer / consultant, or other? | Determines plan framing — job-seekers need employer-facing assets; entrepreneurs need a pivot or launch strategy |
+| 0a | Which best describes you: job-seeker / employee, entrepreneur / business owner, freelancer / consultant, or other? If "Other" is selected, a free-text clarification field appears. | Determines plan framing — job-seekers need employer-facing assets; entrepreneurs need a pivot or launch strategy; "Other" detail captured in `client_type_other` |
 | 0b | What field or industry are you transitioning *from*? | Anchors Section 1 ("Your Starting Point") and the "Strategic Insight" box; without this the opening narrative cannot be written |
 | 0c | LinkedIn profile URL | Direct access to professional history without requiring an export file; supplements or replaces CV |
 | 0d | Languages and proficiency level | Gating requirement for multilateral agencies, UN bodies, and international NGOs; localises org targets |
