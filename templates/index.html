@@ -420,6 +420,11 @@
               placeholder="e.g. Published 3 sustainability reports at current employer; GitHub with data analysis projects; case study on rural electrification financing; conference presentation on supply chain resilience"></textarea>
             <div class="form-text">List anything you have already produced that can be showcased — the plan will build on it rather than start from zero.</div>
           </div>
+          <div class="mb-3">
+            <label class="form-label">Anything else you'd like your consultant to know? (optional)</label>
+            <textarea name="anything_else" class="form-control" rows="4"
+              placeholder="Anything pertinent to your search that hasn't been captured elsewhere — personal context, timing, a specific opportunity you're pursuing, constraints, or anything you think would help shape your plan."></textarea>
+          </div>
         </div>
       </div>
     </div>
@@ -442,6 +447,33 @@
               <div class="mt-2">
                 <a href="#" id="cv-fallback-toggle" class="form-text text-decoration-none" style="color:var(--teal);">No CV ready? Fill in your background here instead ▾</a>
               </div>
+              <!-- CV fallback — shown when no CV is uploaded; nested here so it appears directly under the CV field -->
+              <div class="d-none mt-3" id="cv-fallback">
+                <div class="p-3 rounded" style="background:#1e2533; border:1px solid #30363d;">
+                  <p class="mb-3 text-muted small">Fill in the fields below so your consultant can generate your plan without a CV.</p>
+                  <div class="mb-2">
+                    <label class="form-label">Current or most recent job title</label>
+                    <input type="text" name="current_title" class="form-control" placeholder="e.g. Senior Programme Officer">
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">Industry or sector of that role</label>
+                    <input type="text" name="current_industry" class="form-control" placeholder="e.g. International NGO — food security">
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">Total years of professional experience</label>
+                    <input type="text" name="years_experience" class="form-control" placeholder="e.g. 9 years">
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">Certifications already held</label>
+                    <input type="text" name="existing_certs" class="form-control" placeholder="e.g. PMP, CFA Level 1, Google Data Analytics">
+                  </div>
+                  <div class="mb-0">
+                    <label class="form-label">Key skills in your own words</label>
+                    <textarea name="key_skills" class="form-control" rows="3"
+                      placeholder="e.g. Stakeholder engagement, M&E frameworks, donor reporting, Excel modelling, facilitation"></textarea>
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="col-md-6">
               <label class="form-label">LinkedIn profile URL (optional)</label>
@@ -451,35 +483,6 @@
               <label class="form-label">LinkedIn export or profile summary (optional)</label>
               <input type="file" name="linkedin_file" class="form-control" accept=".pdf,.txt">
               <div class="form-text">To export: LinkedIn → Me → Settings → Data privacy → Get a copy of your data.</div>
-            </div>
-            <!-- CV fallback — shown when no CV is uploaded -->
-            <div class="col-12 d-none" id="cv-fallback">
-              <div class="p-3 rounded" style="background:#1e2533; border:1px solid #30363d;">
-                <p class="mb-3 text-muted small">Fill in the fields below so your consultant can generate your plan without a CV.</p>
-                <div class="row g-3">
-                  <div class="col-md-6">
-                    <label class="form-label">Current or most recent job title</label>
-                    <input type="text" name="current_title" class="form-control" placeholder="e.g. Senior Programme Officer">
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Industry or sector of that role</label>
-                    <input type="text" name="current_industry" class="form-control" placeholder="e.g. International NGO — food security">
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Total years of professional experience</label>
-                    <input type="text" name="years_experience" class="form-control" placeholder="e.g. 9 years">
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Certifications already held</label>
-                    <input type="text" name="existing_certs" class="form-control" placeholder="e.g. PMP, CFA Level 1, Google Data Analytics">
-                  </div>
-                  <div class="col-12">
-                    <label class="form-label">Key skills in your own words</label>
-                    <textarea name="key_skills" class="form-control" rows="3"
-                      placeholder="e.g. Stakeholder engagement, M&E frameworks, donor reporting, Excel modelling, facilitation"></textarea>
-                  </div>
-                </div>
-              </div>
             </div>
             <div class="col-md-6">
               <label class="form-label">Target job description (TXT or PDF)</label>

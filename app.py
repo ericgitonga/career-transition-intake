@@ -446,6 +446,7 @@ def build_pdf(d, path):
             ("Sections to emphasise",                                 d.get("emphasise")),
             ("Background notes / anything to handle with care",       d.get("background_notes")),
             ("Existing portfolio or work evidence",                   d.get("existing_portfolio")),
+            ("Anything else the consultant should know",              d.get("anything_else")),
         ]),
     ]
 
@@ -638,6 +639,7 @@ def submit():
         emphasise=_clip(request.form.get("emphasise"), 5000),
         background_notes=_clip(request.form.get("background_notes"), 5000),
         existing_portfolio=_clip(request.form.get("existing_portfolio"), 5000),
+        anything_else=_clip(request.form.get("anything_else"), 5000),
         current_title=_clip(request.form.get("current_title"), 200),
         current_industry=_clip(request.form.get("current_industry"), 200),
         years_experience=_clip(request.form.get("years_experience"), 100),

@@ -218,6 +218,7 @@ completes intake verbally or if you need to probe a thin answer from the form.
 | 8b | Are there any sections you'd like to emphasise — or anything you'd like us to skip? | Respects client autonomy; avoids building sections they'll never use |
 | 8c | Is there anything about your background you are particularly proud of, or anything you prefer not to highlight? | Feeds the narrative framing; some clients have non-linear histories that need careful handling |
 | 8d | What portfolio or work evidence do you already have — published reports, GitHub projects, conference talks, case studies? | The portfolio section builds *on* existing evidence, not from zero; knowing this prevents redundant or embarrassing recommendations |
+| 8e | Is there anything else you'd like your consultant to know — context, timing, a specific opportunity, or anything not captured elsewhere? | Catch-all for information that doesn't fit any structured question; often surfaces the most important context |
 
 ---
 
@@ -230,6 +231,8 @@ completes intake verbally or if you need to probe a thin answer from the form.
 | B3 | Total years of professional experience | Sets seniority framing and credibility level throughout |
 | B4 | Key skills in your own words | Client's self-perception of their strongest transferable assets; complements CV extraction |
 | B5 | Certifications already held | Prevents the plan from suggesting credentials the client already has |
+
+**Note on form layout:** The CV fallback block is nested directly inside the CV upload column and expands beneath it when the toggle link is clicked. It collapses automatically if the client subsequently uploads a CV. Fields are presented in a single-column stacked layout.
 
 ---
 
@@ -254,6 +257,7 @@ completes intake verbally or if you need to probe a thin answer from the form.
 | Admired individuals / orgs | Section 7 target contacts |
 | Existing portfolio evidence | Section 8 portfolio — builds on existing pieces, does not duplicate them |
 | Fears and blockers | Section 12 "A Final Word" — address directly |
+| Anything else (free-form) | Read carefully before generating — often contains the most important context; surface it in whichever section it is most relevant to |
 
 ---
 
@@ -315,6 +319,7 @@ The intake PDF is structured in sections matching the form. Extract and record:
 - **Existing portfolio evidence** — open Section 8 with what the client already has; build forward from there; never suggest a portfolio piece they have already produced
 - **Plan audience** — if shared with an employer or sponsor, increase context and polish; if solo, keep it direct and practical
 - **Sections to emphasise / background notes** — honour these explicitly; if client flagged something to handle with care, do so
+- **Anything else (free-form)** — read this field before generating; it often contains timing context, a specific opportunity, or a constraint that completely changes the framing. Surface it in the most relevant plan section rather than ignoring it.
 - **Professional background self-report** (if no CV uploaded) — treat current_title, current_industry, years_experience, key_skills, and existing_certs as the source of truth in place of the CV; note in the plan that figures are self-reported
 
 ### From the CV(s)
