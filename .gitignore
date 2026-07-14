@@ -1,6 +1,10 @@
 # Client folders — never commit client data
 Clients/
+
+# extras/ data and PDFs stay local; scripts are tracked
 extras/
+!extras/pull_render_logs.py
+!extras/log_processed.py
 
 # Private report generators
 generate_security_pdf.py
