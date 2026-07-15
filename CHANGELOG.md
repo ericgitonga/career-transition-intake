@@ -6,6 +6,19 @@ pre-1.0 (initial development) — the major version stays at `0` until a stable,
 production-ready release is declared. MINOR bumps cover new features and
 user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
 
+## [0.19.1] - 2026-07-15
+### Changed
+- Reworded the two smaller "Preferred organisation stage" checkbox labels in
+  Section 2 of the intake form: "Early-stage startup (seed / Series A)" →
+  "Early-stage business"; "Growth-stage startup (Series B+)" → "Growth-stage
+  business". The dropped parenthetical was US venture-capital funding-round
+  terminology that doesn't reflect the primary client base (Kenya-based),
+  where most target employers aren't venture-funded in that sense. The five
+  underlying tiers and their team-size/maturity descriptions are unchanged.
+  (closes #25)
+
+tag: `v0.19.1`
+
 ## [0.19.0] - 2026-07-15
 ### Changed
 - Section 10's non-blocking encouragement banner (0.18.0 / #23) is superseded

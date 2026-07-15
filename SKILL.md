@@ -42,7 +42,7 @@ to general knowledge of what a "typical" client in this situation might want.
 
 ## Versioning
 
-Current version: **0.19.0** (see `VERSION` and `CHANGELOG.md`).
+Current version: **0.19.1** (see `VERSION` and `CHANGELOG.md`).
 
 This project follows [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) and is
 pre-1.0: the major version stays at `0` throughout initial development. Major only moves to
