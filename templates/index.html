@@ -504,17 +504,17 @@
           <p class="text-muted small">These will be attached to the email sent to your consultant and used to generate your Career Transition Plan.</p>
           <div class="p-3 rounded mb-3" style="background:#1e2533; border:1px solid var(--teal);">
             <p class="mb-0 small" style="color:#e6edf3;">
-              💡 The more of this section you fill in — a CV, a target job description, even just the
-              background questions below if you don't have a CV handy — the more specific and useful
-              your plan will be. Nothing here is required, but every extra detail helps your consultant
-              build something tailored to you rather than something generic.
+              💡 We just need either your CV/business profile uploaded, or the background questions
+              below filled in if you don't have a file handy — so your consultant has something to
+              build from. Everything else here is optional, but the more you share (a target job
+              description, a LinkedIn export), the more specific and useful your plan will be.
             </p>
           </div>
           <div class="row g-3">
             <div class="col-md-6">
-              <label class="form-label">CV / Résumé (optional for entrepreneurs)</label>
+              <label class="form-label" id="cv-label">CV / Résumé *</label>
               <input type="file" name="cv_file" id="cv-input" class="form-control" accept=".pdf,.doc,.docx">
-              <div class="form-text">Job seekers: upload your CV. Entrepreneurs: upload a company profile, pitch deck, or bio instead.</div>
+              <div class="form-text" id="cv-hint">Upload your CV — or fill in the background questions below if it isn't ready yet.</div>
               <div class="mt-2">
                 <a href="#" id="cv-fallback-toggle" class="form-text text-decoration-none" style="color:var(--teal);">No CV ready? Fill in your background here instead ▾</a>
               </div>

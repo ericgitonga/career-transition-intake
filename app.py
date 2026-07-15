@@ -345,12 +345,21 @@ def _qa(question, value):
     return [Paragraph(question, _label), Paragraph(text, _ans), Spacer(1, 4)]
 
 
-def _sec4_pairs(d):
-    """Return the Section 4 Q&A pairs, choosing employment vs entrepreneur questions based on client type."""
-    is_entrepreneur = d.get("client_type", "") in (
+def _is_entrepreneur_type(client_type: str) -> bool:
+    """True if the client's Section 1 type routes them to the entrepreneur/freelancer track.
+
+    Shared by ``_sec4_pairs`` (employment vs. business-status questions) and
+    ``submit`` (CV vs. business-profile requirement) so both stay in sync.
+    """
+    return client_type in (
         "Entrepreneur or business owner",
         "Freelancer or independent consultant",
     )
+
+
+def _sec4_pairs(d):
+    """Return the Section 4 Q&A pairs, choosing employment vs entrepreneur questions based on client type."""
+    is_entrepreneur = _is_entrepreneur_type(d.get("client_type", ""))
     pairs = []
     if is_entrepreneur:
         pairs.append(("Business operating status", d.get("entrepreneur_status")))
@@ -706,6 +715,23 @@ def submit():
         existing_certs=_clip(request.form.get("existing_certs"), 500),
         key_skills=_clip(request.form.get("key_skills"), 2000),
     )
+
+    # Require either a CV/business-profile upload or the background fallback
+    # fields — mirrors the client-side check in form.js, which a client could
+    # bypass by disabling JavaScript or calling this endpoint directly.
+    cv_file = request.files.get("cv_file")
+    cv_uploaded = bool(cv_file and cv_file.filename)
+    fallback_filled = any(
+        data[field] for field in
+        ("current_title", "current_industry", "years_experience", "existing_certs", "key_skills")
+    )
+    if not cv_uploaded and not fallback_filled:
+        upload_label = "business profile or pitch deck" if _is_entrepreneur_type(data["client_type"]) else "CV/résumé"
+        return (
+            f"Please upload your {upload_label}, or fill in the background questions "
+            "in the Document Uploads section, before submitting.",
+            400,
+        )
 
     # S-13: temp file path is cryptographically random; display name uses slug
     token    = secrets.token_hex(8)

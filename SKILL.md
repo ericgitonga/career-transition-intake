@@ -42,7 +42,7 @@ to general knowledge of what a "typical" client in this situation might want.
 
 ## Versioning
 
-Current version: **0.18.0** (see `VERSION` and `CHANGELOG.md`).
+Current version: **0.19.0** (see `VERSION` and `CHANGELOG.md`).
 
 This project follows [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) and is
 pre-1.0: the major version stays at `0` throughout initial development. Major only moves to
@@ -98,8 +98,11 @@ Users must never see backend internals. This applies at every layer of the stack
 **Privacy statement**
 - The intake form (`templates/index.html`) displays a plain-print privacy statement above the submit button, stating that submitted information/documents are used only to generate the client's plan and are not shared with any third party. This must remain visible and accurate to how the server actually handles data (see "Client data handling rules" below) — do not weaken or remove it without updating this document.
 
-**Document Uploads encouragement banner**
-- Section 10 (Document Uploads) displays a static, non-blocking banner above the upload fields encouraging clients to fill in as much as they can — CV, JD, or the CV-fallback background fields — framed positively ("the more we have, the better the plan"), never as a warning or requirement. Added after two intakes (Tsalwa, Mwihaki) were submitted with no CV and no fallback fields, forcing a manual gap-note follow-up instead of a full plan (see `Clients/<name>/generate_gap_note.py` pattern). This is intentionally soft-touch: no client-side or server-side validation gates submission on these fields — see issue #23.
+**Document Uploads: CV/business-profile requirement**
+- Section 10 (Document Uploads) displays a static, warmly-worded banner above the upload fields explaining that either the CV/business-profile upload or the background fallback fields are required, and that everything else in the section is optional but improves plan quality. Framed positively, never as a warning.
+- Section 1's `client_type` answer routes which upload is asked for: job-seekers/employees/"Other" see "CV / Résumé"; entrepreneurs and freelancers see "Business Profile / Pitch Deck" instead. This reuses the same entrepreneur/freelancer grouping as the Section 4 employment-vs-business-status split (`_is_entrepreneur_type()` in `app.py`, mirrored by the client-type toggle in `static/form.js`) — client type is asked once, not twice.
+- Submission requires either that upload (`cv_file`) or at least one of the five CV-fallback fields (`current_title`, `current_industry`, `years_experience`, `existing_certs`, `key_skills`) to be filled in. This is enforced twice: client-side in `form.js` (blocks the fetch, expands Section 10 and the fallback block, scrolls to the field, shows a plain-English inline error) and server-side in `app.py`'s `submit()` (returns HTTP 400 with a plain-English message if bypassed). All other document fields (LinkedIn, JD, learning plan, additional files) remain fully optional.
+- Added after two intakes (Tsalwa, Mwihaki) were submitted with no CV and no fallback fields, leaving no material for a meaningful plan and forcing a manual gap-note follow-up (see `Clients/<name>/generate_gap_note.py` pattern). An earlier non-blocking banner (issue #23) was tried first and superseded by this hard requirement (issue #24) once it became clear both prior cases were job-seeker/freelancer types, not entrepreneurs — the CV field's "(optional for entrepreneurs)" label had never actually been enforced for anyone.
 
 **Startup / cold start**
 - The hosted entry point for clients is the loading page at `https://career-transition-loading.onrender.com`, not the Flask app URL directly. Share only the loading page URL.

@@ -1,10 +1,29 @@
-// Client type — show employment block for job-seekers, entrepreneur block for business owners / freelancers
+// Client type — show employment block for job-seekers, entrepreneur block for business owners / freelancers;
+// also drives the Section 10 CV-vs-business-profile field, since it's the same route decision.
 (function () {
   const empBlock  = document.getElementById('employment-block');
   const entBlock  = document.getElementById('entrepreneur-block');
   const esBlock   = document.getElementById('employed-status-block');
-
   const otherWrap = document.getElementById('client-type-other-wrap');
+
+  const cvLabel  = document.getElementById('cv-label');
+  const cvHint   = document.getElementById('cv-hint');
+  const toggle   = document.getElementById('cv-fallback-toggle');
+  const fallback = document.getElementById('cv-fallback');
+  const cvInput  = document.getElementById('cv-input');
+
+  let cvIsEntrepreneur = false;
+
+  function toggleBaseText() {
+    return cvIsEntrepreneur
+      ? "Don't have a profile ready? Fill in your background here instead"
+      : 'No CV ready? Fill in your background here instead';
+  }
+
+  function refreshCvToggleText() {
+    const hidden = fallback.classList.contains('d-none');
+    toggle.textContent = toggleBaseText() + (hidden ? ' ▾' : ' ▴');
+  }
 
   function applyClientType(val) {
     const isEntrepreneur = val === 'Entrepreneur or business owner' || val === 'Freelancer or independent consultant';
@@ -12,7 +31,27 @@
     entBlock.classList.toggle('d-none', !isEntrepreneur);
     if (isEntrepreneur) esBlock.classList.add('d-none');
     otherWrap.classList.toggle('d-none', val !== 'Other');
+
+    cvIsEntrepreneur = isEntrepreneur;
+    cvLabel.textContent = isEntrepreneur ? 'Business Profile / Pitch Deck *' : 'CV / Résumé *';
+    cvHint.textContent = isEntrepreneur
+      ? 'Upload a company profile, pitch deck, or bio — or fill in the background questions below.'
+      : "Upload your CV — or fill in the background questions below if it isn't ready yet.";
+    refreshCvToggleText();
   }
+
+  toggle.addEventListener('click', function (e) {
+    e.preventDefault();
+    fallback.classList.toggle('d-none');
+    refreshCvToggleText();
+  });
+
+  cvInput.addEventListener('change', function () {
+    if (this.files.length > 0) {
+      fallback.classList.add('d-none');
+      refreshCvToggleText();
+    }
+  });
 
   document.querySelectorAll('input[name="client_type"]').forEach(function (radio) {
     radio.addEventListener('change', function () { applyClientType(this.value); });
@@ -70,28 +109,6 @@ document.querySelectorAll('input[name="target_clarity"]').forEach(function (radi
   });
 })();
 
-// CV fallback — toggle visibility via link; auto-hide when a file is selected
-(function () {
-  const toggle   = document.getElementById('cv-fallback-toggle');
-  const fallback = document.getElementById('cv-fallback');
-  const cvInput  = document.getElementById('cv-input');
-
-  toggle.addEventListener('click', function (e) {
-    e.preventDefault();
-    const hidden = fallback.classList.toggle('d-none');
-    toggle.textContent = hidden
-      ? 'No CV ready? Fill in your background here instead ▾'
-      : 'No CV ready? Fill in your background here instead ▴';
-  });
-
-  cvInput.addEventListener('change', function () {
-    if (this.files.length > 0) {
-      fallback.classList.add('d-none');
-      toggle.textContent = 'No CV ready? Fill in your background here instead ▾';
-    }
-  });
-})();
-
 // Record when the page finished loading so we can measure time on form
 const _pageLoadedAt = Date.now();
 
@@ -103,8 +120,30 @@ range.addEventListener('input', () => val.textContent = range.value);
 // Form submit via fetch → PDF download
 document.getElementById('form').addEventListener('submit', async function (e) {
   e.preventDefault();
+  const form   = this;
   const btn    = document.getElementById('submit-btn');
   const status = document.getElementById('status');
+
+  // Require either a CV/business-profile upload or the background fallback fields —
+  // whichever route Section 1's client type points to. Without one of these, the
+  // consultant has nothing to generate a plan from.
+  const cvInput = document.getElementById('cv-input');
+  const fallbackFields = ['current_title', 'current_industry', 'years_experience', 'existing_certs', 'key_skills'];
+  const fallbackFilled = fallbackFields.some(name => (form.elements[name].value || '').trim().length > 0);
+
+  if (cvInput.files.length === 0 && !fallbackFilled) {
+    bootstrap.Collapse.getOrCreateInstance(document.getElementById('s10')).show();
+    if (document.getElementById('cv-fallback').classList.contains('d-none')) {
+      document.getElementById('cv-fallback-toggle').click();
+    }
+    cvInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const isEntrepreneur = document.getElementById('cv-label').textContent.includes('Business');
+    status.className = 'alert alert-danger';
+    status.textContent = 'Please upload your ' + (isEntrepreneur ? 'business profile or pitch deck' : 'CV/résumé')
+      + ', or fill in the background questions in Section 10, before submitting.';
+    status.classList.remove('d-none');
+    return;
+  }
 
   document.getElementById('time-on-form').value = Math.round((Date.now() - _pageLoadedAt) / 1000);
 

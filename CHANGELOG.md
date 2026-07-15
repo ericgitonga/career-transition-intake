@@ -6,6 +6,26 @@ pre-1.0 (initial development) — the major version stays at `0` until a stable,
 production-ready release is declared. MINOR bumps cover new features and
 user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
 
+## [0.19.0] - 2026-07-15
+### Changed
+- Section 10's non-blocking encouragement banner (0.18.0 / #23) is superseded
+  by an actual requirement: submission now needs either a CV/business-profile
+  upload or at least one CV-fallback field filled in, enforced both
+  client-side (`form.js`) and server-side (`app.py`, HTTP 400 with a
+  plain-English message if bypassed).
+- The CV field now reuses Section 1's existing `client_type` answer (no new
+  question) to relabel itself: job-seekers/employees/"Other" see "CV /
+  Résumé"; entrepreneurs and freelancers see "Business Profile / Pitch Deck"
+  — the same grouping already used for Section 4's employment-vs-business
+  split, factored into a shared `_is_entrepreneur_type()` helper in
+  `app.py`.
+- Motivated by discovering that both prior thin-data intakes (Tsalwa,
+  Mwihaki) were job-seeker/freelancer types, not entrepreneurs — the old
+  "(optional for entrepreneurs)" label had never actually been enforced for
+  anyone. (closes #24)
+
+tag: `v0.19.0`
+
 ## [0.18.0] - 2026-07-15
 ### Added
 - Static, non-blocking encouragement banner in Section 10 (Document Uploads),
