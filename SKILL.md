@@ -42,7 +42,7 @@ to general knowledge of what a "typical" client in this situation might want.
 
 ## Versioning
 
-Current version: **0.17.0** (see `VERSION` and `CHANGELOG.md`).
+Current version: **0.18.0** (see `VERSION` and `CHANGELOG.md`).
 
 This project follows [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) and is
 pre-1.0: the major version stays at `0` throughout initial development. Major only moves to
@@ -97,6 +97,9 @@ Users must never see backend internals. This applies at every layer of the stack
 
 **Privacy statement**
 - The intake form (`templates/index.html`) displays a plain-print privacy statement above the submit button, stating that submitted information/documents are used only to generate the client's plan and are not shared with any third party. This must remain visible and accurate to how the server actually handles data (see "Client data handling rules" below) — do not weaken or remove it without updating this document.
+
+**Document Uploads encouragement banner**
+- Section 10 (Document Uploads) displays a static, non-blocking banner above the upload fields encouraging clients to fill in as much as they can — CV, JD, or the CV-fallback background fields — framed positively ("the more we have, the better the plan"), never as a warning or requirement. Added after two intakes (Tsalwa, Mwihaki) were submitted with no CV and no fallback fields, forcing a manual gap-note follow-up instead of a full plan (see `Clients/<name>/generate_gap_note.py` pattern). This is intentionally soft-touch: no client-side or server-side validation gates submission on these fields — see issue #23.
 
 **Startup / cold start**
 - The hosted entry point for clients is the loading page at `https://career-transition-loading.onrender.com`, not the Flask app URL directly. Share only the loading page URL.

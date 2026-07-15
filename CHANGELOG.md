@@ -6,6 +6,19 @@ pre-1.0 (initial development) — the major version stays at `0` until a stable,
 production-ready release is declared. MINOR bumps cover new features and
 user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
 
+## [0.18.0] - 2026-07-15
+### Added
+- Static, non-blocking encouragement banner in Section 10 (Document Uploads),
+  inviting clients to fill in a CV, target job description, or the CV
+  fallback fields — framed positively ("the more we have, the better the
+  plan"), never as a warning or a requirement. No validation gating was
+  added; submission is unaffected. Added after two intakes (Tsalwa, Mwihaki)
+  arrived with neither a CV nor the fallback fields filled in, which meant no
+  meaningful plan could be generated and a manual gap-note follow-up was
+  needed instead. (closes #23)
+
+tag: `v0.18.0`
+
 ## [0.17.0] - 2026-07-15
 ### Security
 - Second security audit, covering everything changed since the S-01–S-15
