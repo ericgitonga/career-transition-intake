@@ -6,6 +6,22 @@ pre-1.0 (initial development) — the major version stays at `0` until a stable,
 production-ready release is declared. MINOR bumps cover new features and
 user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
 
+## [0.17.0] - 2026-07-15
+### Security
+- Second security audit, covering everything changed since the S-01–S-15
+  hardening pass: S-16 log-line forgery / field-hijack in the submission log
+  (fixed via sanitizing and percent-encoding logged fields, `_log_field()`);
+  S-17 spreadsheet formula injection in `onboard_metrics.xlsx` (fixed via a
+  leading-apostrophe guard, `_safe_cell()`, in both `extras/` scripts); S-18
+  a real Render service ID hardcoded in a public, tracked script (replaced
+  with a placeholder); S-19 client slug not restricted to safe filename
+  characters, allowing path-like sequences into ZIP archive entry names
+  (fixed by restricting `_client_slug()` to letters/digits/hyphen/underscore).
+  Also removed a stale, superseded `loading.html` left at the repo root.
+  (closes #22)
+
+tag: `v0.17.0`
+
 ## [0.16.1] - 2026-07-15
 ### Changed
 - Added an "Inference Discipline" section to SKILL.md: every claim in the

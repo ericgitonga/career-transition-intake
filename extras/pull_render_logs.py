@@ -4,7 +4,7 @@ Pull submission logs from Render and populate extras/onboard_metrics.xlsx (Sheet
 Setup:
     conda run -n ds pip install requests openpyxl
     export RENDER_API_KEY=rnd_...            # Render dashboard → Account Settings → API Keys
-    export RENDER_SERVICE_ID=srv-d97lh5etrd3s7399aqc0   # career-transition-intake service ID
+    export RENDER_SERVICE_ID=srv-xxxxxxxxxxxxxxxxxxxx   # career-transition-intake service ID
 
 Usage:
     conda run -n ds python extras/pull_render_logs.py              # last 30 days
@@ -18,6 +18,7 @@ import re
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from urllib.parse import unquote
 
 try:
     import requests
@@ -63,6 +64,22 @@ PROCESSED_COLS = [
 ]
 
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
+
+# S-17: characters that Excel/LibreOffice/Sheets treat as a formula prefix
+_FORMULA_TRIGGERS = ("=", "+", "-", "@")
+
+
+def _safe_cell(value):
+    """Neutralize spreadsheet formula injection (CWE-1236) in client-controlled strings.
+
+    Client Name and Target Domain originate from the public intake form, so a
+    submission like ``full_name = '=HYPERLINK("http://evil.example","x")'``
+    would otherwise become a live formula the moment this workbook is opened.
+    Prefixing a leading apostrophe forces the cell to be read as literal text.
+    """
+    if isinstance(value, str) and value.startswith(_FORMULA_TRIGGERS):
+        return "'" + value
+    return value
 
 
 # ── Render API helpers ────────────────────────────────────────────────────────
@@ -193,6 +210,14 @@ def _parse_entries(entries):
         m = RE_RECEIVED.search(msg)
         if m:
             d = m.groupdict()
+            # S-16: app.py percent-encodes these fields before logging, so a
+            # client-controlled value can never contain a literal delimiter
+            # (" uploads=", " email=", a newline, ...) that could hijack the
+            # regex above. Decode back to the original text now that the
+            # field boundaries are already safely resolved.
+            for key in ("name", "email", "target", "time_on_form"):
+                if d.get(key) is not None:
+                    d[key] = unquote(d[key])
             d["_dt"] = dt
             received_list.append(d)
             continue
@@ -200,6 +225,8 @@ def _parse_entries(entries):
         m = RE_COMPLETE.search(msg)
         if m:
             d = m.groupdict()
+            if d.get("name") is not None:
+                d["name"] = unquote(d["name"])
             d["_dt"] = dt
             complete_list.append(d)
 
@@ -284,7 +311,7 @@ def _append_rows(ws, rows, cols, existing_keys):
             continue
         r = ws.max_row + 1
         for ci, col in enumerate(cols, 1):
-            c = ws.cell(r, ci, row_data.get(col, ""))
+            c = ws.cell(r, ci, _safe_cell(row_data.get(col, "")))
             if r % 2 == 0:
                 c.fill = ALT_FILL
         existing_keys.add(key)

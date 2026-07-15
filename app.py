@@ -17,15 +17,26 @@ Security hardening applied (see Clients/security.pdf for full audit):
   S-13  Temp filename uses cryptographically random token (Phase 3)
   S-14  Upload extension validated by whitelist — resolved by S-03 (Phase 1)
   S-15  Submission events logged via app.logger (Phase 3)
+
+Second audit (see Clients/security.pdf for full findings):
+  S-16  Logged fields sanitized to prevent log-line forgery (Phase 4)
+  S-17  Formula-injection guard on values written to onboard_metrics.xlsx
+        (extras/pull_render_logs.py, extras/log_processed.py) (Phase 4)
+  S-18  Real Render service ID replaced with a placeholder in a public,
+        tracked script (extras/pull_render_logs.py) (Phase 4)
+  S-19  Client slug restricted to safe filename characters, preventing
+        path-like sequences in ZIP archive entry names (Phase 4)
 """
 
 import os
+import re
 import secrets
 import tempfile
 import unicodedata
 import zipfile
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import quote
 
 import resend
 from flask import Flask, request, render_template, send_file
@@ -134,6 +145,28 @@ def _clip(value, max_len: int = 5000) -> str:
     return value[:max_len] if len(value) > max_len else value
 
 
+def _log_field(value: str) -> str:
+    """Make *value* safe to embed as a ``key=value`` token in a structured log line.
+
+    Stripping control characters (S-16) alone is not enough: a client-supplied
+    value containing an ordinary literal substring like ``" uploads=999"``
+    can still hijack extras/pull_render_logs.py's regex parser within a
+    single log line (it looks for the next literal `` uploads=`` /
+    `` email=`` token, wherever it occurs). Percent-encoding every space,
+    ``=``, and other non-alphanumeric character removes any literal
+    delimiter-like text from the value, so the parser's fixed tokens can only
+    ever match the ones the server itself emitted.
+
+    Args:
+        value: A sanitized client-controlled string destined for a log line.
+
+    Returns:
+        A percent-encoded string containing only unreserved URL characters
+        (letters, digits, ``-._~``), safe to place between fixed delimiters.
+    """
+    return quote(_sanitize(value), safe="")
+
+
 def _sanitize(value: str) -> str:
     """Strip newlines and Unicode control characters from *value*.
 
@@ -204,13 +237,18 @@ def _client_slug(full_name: str) -> str:
         "Alex Mercer"       -> "AlexM"
         "Marie Anne Curie"  -> "MarieAC"
         "Jean-Paul Sartre"  -> "Jean-PaulS"
+
+    Restricted to letters, digits, hyphens, and underscores (S-19) so the
+    slug can never carry a path-traversal sequence or other special
+    character into a ZIP archive entry name or a download filename.
     """
     parts = _sanitize(full_name).split()
     if not parts:
         return "Client"
     first = parts[0]
     initials = "".join(p[0].upper() for p in parts[1:] if p)
-    return first + initials
+    slug = re.sub(r"[^A-Za-z0-9_-]", "", first + initials)
+    return slug or "Client"
 
 
 def _build_zip(slug: str, pdf_path: str, pdf_name: str,
@@ -715,11 +753,15 @@ def submit():
         uploads.append((tmp.name, f"{slug}-Extra{i}{suffix}"))
 
     # S-15: structured submission log for audit trail and abuse detection
+    # S-16: every value is percent-encoded (_log_field) — logged fields are
+    # parsed by extras/pull_render_logs.py's regex, so an embedded newline or
+    # a literal " uploads="/" email=" substring here could forge a fake log
+    # line, or hijack field boundaries within a real one.
     app.logger.info(
         "Submission received: name=%s email=%s target=%s uploads=%d time_on_form=%s",
-        data.get("full_name"), data.get("client_email"),
-        data.get("target_domain"), len(uploads),
-        data.get("time_on_form_seconds", ""),
+        _log_field(data.get("full_name", "")), _log_field(data.get("client_email", "")),
+        _log_field(data.get("target_domain", "")), len(uploads),
+        _log_field(data.get("time_on_form_seconds", "")),
     )
 
     # When uploads are present, bundle everything into a ZIP; otherwise email
@@ -740,9 +782,10 @@ def submit():
             email_status = "failed"
 
     # S-15: log outcome so silent email failures are visible in server logs
+    # S-16: name is percent-encoded for the same reason as the line above
     app.logger.info(
         "Submission complete: name=%s email_status=%s attachment=%s",
-        data.get("full_name"), email_status, attachment_name,
+        _log_field(data.get("full_name", "")), email_status, attachment_name,
     )
 
     # S-07: delete all temp files after response is built, regardless of outcome

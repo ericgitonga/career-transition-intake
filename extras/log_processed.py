@@ -45,6 +45,16 @@ COLS = [
     "Notes",
 ]
 
+# S-17: characters that Excel/LibreOffice/Sheets treat as a formula prefix
+_FORMULA_TRIGGERS = ("=", "+", "-", "@")
+
+
+def _safe_cell(value):
+    """Neutralize spreadsheet formula injection (CWE-1236) — see pull_render_logs.py."""
+    if isinstance(value, str) and value.startswith(_FORMULA_TRIGGERS):
+        return "'" + value
+    return value
+
 
 def _ensure_sheet(wb):
     if SHEET not in wb.sheetnames:
@@ -113,7 +123,7 @@ def main():
     for ci, val in enumerate(
         [args.client_name, start_str, end_str, duration, args.output, args.notes], 1
     ):
-        c = ws.cell(r, ci, val)
+        c = ws.cell(r, ci, _safe_cell(val))
         if r % 2 == 0:
             c.fill = ALT_FILL
 

@@ -42,7 +42,7 @@ to general knowledge of what a "typical" client in this situation might want.
 
 ## Versioning
 
-Current version: **0.16.1** (see `VERSION` and `CHANGELOG.md`).
+Current version: **0.17.0** (see `VERSION` and `CHANGELOG.md`).
 
 This project follows [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) and is
 pre-1.0: the major version stays at `0` throughout initial development. Major only moves to
@@ -82,6 +82,9 @@ are built with security as a primary requirement, not an afterthought.
 | Submission logging | Every submission is logged (app.logger.info) for audit trail and abuse detection |
 | Pinned dependencies | All packages are pinned to known-good versions in requirements.txt |
 | No inline scripts | All JavaScript is served from static/form.js, enabling a strict script-src CSP with no 'unsafe-inline' |
+| Log-field encoding (_log_field()) | Values logged via app.logger are sanitised and percent-encoded, so a client-supplied newline or a literal `uploads=`/`email=` substring cannot forge or hijack a log line parsed by extras/pull_render_logs.py |
+| Spreadsheet formula-injection guard (_safe_cell()) | Client-controlled values written into onboard_metrics.xlsx (both extras scripts) are prefixed with an apostrophe when they start with `=`, `+`, `-`, or `@`, so Excel/LibreOffice never evaluates them as formulas |
+| Filename-safe client slug | _client_slug() restricts its output to letters, digits, hyphens, and underscores, so a crafted full name cannot embed a path-traversal sequence into a ZIP archive entry name |
 
 ### User-facing behaviour rules
 
