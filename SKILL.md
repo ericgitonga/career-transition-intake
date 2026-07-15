@@ -6,9 +6,43 @@ and ReportLab — no Word, no Google Docs, no design tools required.
 
 ---
 
+## Inference Discipline (read this before drafting any plan)
+
+Every claim in the plan must trace back to something the client explicitly wrote, said, or
+uploaded — in the intake PDF, CV, LinkedIn, job description, learning plan, or portfolio links.
+Do not invent or assume facts, preferences, motivations, or constraints the client did not state.
+
+- **Use answers as written.** Do not read between the lines to add nuance, seniority, or
+  intent the client didn't provide.
+- **A blank, skipped, or "not sure" / "n/a" answer is not a gap to fill with a guess.** Either
+  leave that consideration out of the plan, or — only where the document structure requires
+  something to proceed (e.g. a semester date) — use a clearly-marked placeholder and note that
+  the client should confirm it. Never present a guess as fact.
+- **Connect two stated facts when doing so serves the client's own stated wishes.** Example:
+  the client said they want to work internationally (2b) and separately reported fluent French
+  and Portuguese (0d) — it is fair, and useful, to state that this directly supports targeting
+  Francophone and Lusophone regional offices. This is linking the client's own words together,
+  not inventing anything.
+- **Do not make a connection that requires an unstated assumption.** Example: do not infer that
+  a client "probably" wants a manager-track role because their CV shows leadership experience,
+  if they did not answer the people-management preference question. Leave that dimension open,
+  or flag it for the consultant to confirm — do not decide it for them.
+- **CV and JD extraction is literal.** Use only what the document states — titles, dates, named
+  skills, named certifications. Do not infer seniority, specialisation, or intent beyond what is
+  written.
+- **If the client didn't provide what a section's default structure expects, build with what
+  you have.** A "still exploring" target-clarity answer with no role title means Section 2 is
+  built from domain and clarity level alone — do not fabricate a specific title to fill the slot.
+
+This applies throughout every section: each "Strategic Insight" box, archetype justification,
+and reframed CV bullet must be traceable to a specific answer, CV line, or JD requirement — not
+to general knowledge of what a "typical" client in this situation might want.
+
+---
+
 ## Versioning
 
-Current version: **0.16.0** (see `VERSION` and `CHANGELOG.md`).
+Current version: **0.16.1** (see `VERSION` and `CHANGELOG.md`).
 
 This project follows [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) and is
 pre-1.0: the major version stays at `0` throughout initial development. Major only moves to

@@ -6,6 +6,15 @@ pre-1.0 (initial development) — the major version stays at `0` until a stable,
 production-ready release is declared. MINOR bumps cover new features and
 user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
 
+## [0.16.1] - 2026-07-15
+### Changed
+- Added an "Inference Discipline" section to SKILL.md: every claim in the
+  generated plan must trace back to something the client explicitly stated;
+  connections between two stated facts are encouraged, but no assumption may
+  be invented to fill an unstated gap. (closes #21)
+
+tag: `v0.16.1`
+
 ## [0.16.0] - 2026-07-15
 ### Added
 - Semantic versioning introduced: `VERSION` file, this changelog, retroactive
