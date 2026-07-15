@@ -39,6 +39,9 @@ Users must never see backend internals. This applies at every layer of the stack
 - The submit handler in `form.js` must catch every non-2xx response and display a human-readable sentence — not `res.status` or `err.message` verbatim.
 - If a new error condition is added to `app.py`, a corresponding user-friendly message must be added in `form.js` before the change ships.
 
+**Privacy statement**
+- The intake form (`templates/index.html`) displays a plain-print privacy statement above the submit button, stating that submitted information/documents are used only to generate the client's plan and are not shared with any third party. This must remain visible and accurate to how the server actually handles data (see "Client data handling rules" below) — do not weaken or remove it without updating this document.
+
 **Startup / cold start**
 - The hosted entry point for clients is the loading page at `https://career-transition-loading.onrender.com`, not the Flask app URL directly. Share only the loading page URL.
 - The loading page (`loading/index.html`) shows a branded waiting screen with an estimated countdown. It polls `/_health` and redirects automatically — clients never see Render's server-log loading screen.
