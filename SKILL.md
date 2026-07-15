@@ -6,6 +6,25 @@ and ReportLab — no Word, no Google Docs, no design tools required.
 
 ---
 
+## Versioning
+
+Current version: **0.16.0** (see `VERSION` and `CHANGELOG.md`).
+
+This project follows [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) and is
+pre-1.0: the major version stays at `0` throughout initial development. Major only moves to
+`1.0.0` when the form and plan-generation workflow are explicitly declared stable and
+production-ready; after that, MAJOR is reserved for breaking changes to the form's data
+contract or the plan-generation workflow.
+
+- **MINOR** — new features, new form fields/sections, new user-facing behaviour, new tooling.
+- **PATCH** — bug fixes, docs-only changes, refactors, repository housekeeping.
+
+Before committing any change: bump the version in `VERSION`, add a dated entry to
+`CHANGELOG.md` (referencing the GitHub issue number), and update this line if the version
+changed.
+
+---
+
 ## Security First
 
 All components of this workflow — the intake form, the server, and the client data pipeline —

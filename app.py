@@ -44,6 +44,7 @@ from reportlab.platypus import (
 
 app = Flask(__name__)
 RECIPIENT = "gitonga@gmail.com"
+APP_VERSION = (Path(__file__).parent / "VERSION").read_text().strip()
 
 # ── S-09: Secret key ──────────────────────────────────────────────────────────
 # On Render (production) SECRET_KEY is set as an environment variable via the
@@ -565,7 +566,7 @@ def index():
     Returns:
         A Flask Response containing the rendered HTML form (HTTP 200).
     """
-    return render_template("index.html", recipient=RECIPIENT)
+    return render_template("index.html", recipient=RECIPIENT, app_version=APP_VERSION)
 
 
 @app.route("/submit", methods=["POST"])
