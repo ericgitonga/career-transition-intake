@@ -6,6 +6,35 @@ pre-1.0 (initial development) — the major version stays at `0` until a stable,
 production-ready release is declared. MINOR bumps cover new features and
 user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
 
+## [0.19.3] - 2026-07-17
+### Changed
+- Backfilled the git tags CHANGELOG.md had already been claiming existed
+  (v0.18.0, v0.19.0, v0.19.1, v0.19.2) at the commits their issue references
+  point to, and pushed them.
+- Published a GitHub Release for every version from v0.1.0 through v0.19.2
+  (31 total), built from each CHANGELOG.md entry's own subheading and
+  bullets plus a Full-Changelog compare link to the previous tag.
+- Reworded three CHANGELOG.md entries (v0.18.0, v0.19.0, v0.19.2) that had
+  named real clients as the motivating example behind a fix, replacing the
+  names with a generic description, and edited the matching GitHub Release
+  bodies to match. Also scrubbed the equivalent mentions from
+  generate_design_pdf.py, since a gitignored file is not the same as a safe
+  one.
+- SKILL.md now requires a pushed git tag and a published GitHub Release as
+  the last step of every version bump, and explicitly prohibits naming a
+  real client anywhere — tracked or gitignored, published or purely local.
+  Alex Mercer, the fictitious demo client, is the one standing exception and
+  is now the reference example wherever SKILL.md needs to point to a
+  concrete case.
+- Added `Clients/Alex Mercer/generate_gap_note.py`, producing a fictitious
+  `gap.pdf` for a hypothetical thin intake (no CV, no JD), so the gap-note
+  pattern referenced in SKILL.md's Document Uploads rule has a nameable
+  example instead of pointing at a real client's folder.
+- Documented all three decisions in generate_design_pdf.py's Key Design
+  Decisions section and regenerated design_process.pdf. (closes #29)
+
+tag: `v0.19.3`
+
 ## [0.19.2] - 2026-07-17
 ### Changed
 - Added a standing content rule to SKILL.md: every acronym or abbreviation a
@@ -16,9 +45,9 @@ user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
   PDF, currency codes) are exempt. Added a matching quality-checklist item.
 - Documented the decision in generate_design_pdf.py's Key Design Decisions
   section and regenerated design_process.pdf.
-- Fixed Pauline Mwiki Maingi's existing plan (generate_plan.py /
-  PM_transition_plan.pdf), where IoD, COI, KIM, ARBS, BSc, and MSc were
-  either never expanded or expanded out of reading order. (closes #28)
+- Fixed a client plan generated before this rule existed, where several
+  acronyms were either never expanded or expanded out of reading order.
+  (closes #28)
 
 tag: `v0.19.2`
 
@@ -48,10 +77,10 @@ tag: `v0.19.1`
   — the same grouping already used for Section 4's employment-vs-business
   split, factored into a shared `_is_entrepreneur_type()` helper in
   `app.py`.
-- Motivated by discovering that both prior thin-data intakes (Tsalwa,
-  Mwihaki) were job-seeker/freelancer types, not entrepreneurs — the old
-  "(optional for entrepreneurs)" label had never actually been enforced for
-  anyone. (closes #24)
+- Motivated by discovering that both prior thin-data intakes were
+  job-seeker/freelancer types, not entrepreneurs — the old "(optional for
+  entrepreneurs)" label had never actually been enforced for anyone.
+  (closes #24)
 
 tag: `v0.19.0`
 
@@ -61,8 +90,8 @@ tag: `v0.19.0`
   inviting clients to fill in a CV, target job description, or the CV
   fallback fields — framed positively ("the more we have, the better the
   plan"), never as a warning or a requirement. No validation gating was
-  added; submission is unaffected. Added after two intakes (Tsalwa, Mwihaki)
-  arrived with neither a CV nor the fallback fields filled in, which meant no
+  added; submission is unaffected. Added after two prior intakes arrived
+  with neither a CV nor the fallback fields filled in, which meant no
   meaningful plan could be generated and a manual gap-note follow-up was
   needed instead. (closes #23)
 

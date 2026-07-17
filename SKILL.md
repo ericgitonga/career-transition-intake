@@ -42,7 +42,7 @@ to general knowledge of what a "typical" client in this situation might want.
 
 ## Versioning
 
-Current version: **0.19.2** (see `VERSION` and `CHANGELOG.md`).
+Current version: **0.19.3** (see `VERSION` and `CHANGELOG.md`).
 
 This project follows [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) and is
 pre-1.0: the major version stays at `0` throughout initial development. Major only moves to
@@ -56,6 +56,31 @@ contract or the plan-generation workflow.
 Before committing any change: bump the version in `VERSION`, add a dated entry to
 `CHANGELOG.md` (referencing the GitHub issue number), and update this line if the version
 changed.
+
+### Tags and GitHub Releases
+
+Every version bump gets a real, pushed git tag and a published GitHub Release — a `CHANGELOG.md`
+entry claiming a version alone is not sufficient. After the version-bump commit is pushed:
+
+1. Create an annotated tag matching the new version, e.g.:
+   `git tag -a v0.19.3 -m "v0.19.3 - <one-line summary> (closes #N)"`
+2. Push the tag: `git push origin v0.19.3` (never `git push --tags` — push the one tag just
+   created, so an unrelated stray local tag is never published by accident).
+3. Publish a GitHub Release for that tag with `gh release create v0.19.3 --repo
+   ericgitonga/career-transition-intake --title v0.19.3 --notes-file <notes>`, where the notes
+   file contains:
+   - A `## What's Changed` heading
+   - The same `###` subheading (Added/Changed/Fixed/Security/Removed) and bullets used in the
+     `CHANGELOG.md` entry for that version, verbatim
+   - A trailing `**Full Changelog**: https://github.com/ericgitonga/career-transition-intake/compare/vPREVIOUS...vNEW`
+     line, using the immediately preceding tag (omit this line only for the very first release)
+
+Do not use `--generate-notes` — it produces GitHub's PR-derived notes, which do not match this
+project's `CHANGELOG.md` wording or level of detail. The release body must be built from the
+`CHANGELOG.md` entry, not generated separately from it, so the two never drift apart.
+
+If several commits land before a release is cut, only tag and release once, at the final
+version for that batch of work — do not create a tag/release per intermediate commit.
 
 ---
 
@@ -102,7 +127,7 @@ Users must never see backend internals. This applies at every layer of the stack
 - Section 10 (Document Uploads) displays a static, warmly-worded banner above the upload fields explaining that either the CV/business-profile upload or the background fallback fields are required, and that everything else in the section is optional but improves plan quality. Framed positively, never as a warning.
 - Section 1's `client_type` answer routes which upload is asked for: job-seekers/employees/"Other" see "CV / Résumé"; entrepreneurs and freelancers see "Business Profile / Pitch Deck" instead. This reuses the same entrepreneur/freelancer grouping as the Section 4 employment-vs-business-status split (`_is_entrepreneur_type()` in `app.py`, mirrored by the client-type toggle in `static/form.js`) — client type is asked once, not twice.
 - Submission requires either that upload (`cv_file`) or at least one of the five CV-fallback fields (`current_title`, `current_industry`, `years_experience`, `existing_certs`, `key_skills`) to be filled in. This is enforced twice: client-side in `form.js` (blocks the fetch, expands Section 10 and the fallback block, scrolls to the field, shows a plain-English inline error) and server-side in `app.py`'s `submit()` (returns HTTP 400 with a plain-English message if bypassed). All other document fields (LinkedIn, JD, learning plan, additional files) remain fully optional.
-- Added after two intakes (Tsalwa, Mwihaki) were submitted with no CV and no fallback fields, leaving no material for a meaningful plan and forcing a manual gap-note follow-up (see `Clients/<name>/generate_gap_note.py` pattern). An earlier non-blocking banner (issue #23) was tried first and superseded by this hard requirement (issue #24) once it became clear both prior cases were job-seeker/freelancer types, not entrepreneurs — the CV field's "(optional for entrepreneurs)" label had never actually been enforced for anyone.
+- Added after two prior intakes were submitted with no CV and no fallback fields, leaving no material for a meaningful plan and forcing a manual gap-note follow-up (see `Clients/Alex Mercer/generate_gap_note.py` for the reference pattern — a fictitious example built for this purpose, since the real incidents cannot be named here; see "Client data handling rules" below). An earlier non-blocking banner (issue #23) was tried first and superseded by this hard requirement (issue #24) once it became clear both prior cases were job-seeker/freelancer types, not entrepreneurs — the CV field's "(optional for entrepreneurs)" label had never actually been enforced for anyone.
 
 **Startup / cold start**
 - The hosted entry point for clients is the loading page at `https://career-transition-loading.onrender.com`, not the Flask app URL directly. Share only the loading page URL.
@@ -122,6 +147,8 @@ Users must never see backend internals. This applies at every layer of the stack
 - **Never share intake PDFs** outside the consultant's email inbox. The files contain sensitive career and financial information.
 - **Temp files are ephemeral.** The server deletes them after each submission. Do not read from them after the response is sent.
 - **The `generate_security_pdf.py` script is gitignored** — it contains internal audit findings not for client or public view.
+- **Never name a real client anywhere — not just in `CHANGELOG.md`, a commit message, a git tag, or a GitHub Release, but also in `generate_design_pdf.py`, `design_process.pdf`, or any other file, tracked or gitignored.** Gitignored and "private" are not the same as safe: a local file can still be copied, screen-shared, or committed by accident later. Describe the motivating incident generically instead (e.g. "two prior thin-data intakes", "a client plan generated before this rule existed").
+- **The one exception is Alex Mercer** (`Clients/Alex Mercer/`) — a fictitious client set up specifically to demo the service, safe to name anywhere, including in SKILL.md itself and any future report or reference example. When a rule or decision needs a concrete example to point to, use Alex Mercer's folder rather than inventing a new placeholder or reaching for a real client's data.
 
 ### When making changes to the form or server
 
