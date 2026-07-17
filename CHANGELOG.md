@@ -6,6 +6,22 @@ pre-1.0 (initial development) — the major version stays at `0` until a stable,
 production-ready release is declared. MINOR bumps cover new features and
 user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
 
+## [0.20.1] - 2026-07-17
+### Changed
+- `generate_design_pdf.py` and `generate_security_pdf.py` now write their
+  output (`design_process.pdf`, `security.pdf`) to `extras/` instead of
+  `Clients/` — both are internal project documents, not client data, and
+  writing them into `Clients/` alongside actual client folders was a source
+  of real confusion when looking for the file. Matches the convention
+  `generate_feedback_pdf.py` already used. Overwrote a stale
+  `extras/design_process.pdf` copy left over from earlier in the project
+  with a freshly regenerated one.
+- Updated SKILL.md's client-data-handling rules to reflect the new location
+  and `generate_design_pdf.py`'s own Key Design Decisions section to
+  document the move. (closes #32)
+
+tag: `v0.20.1`
+
 ## [0.20.0] - 2026-07-17
 ### Added
 - Extracted a shared `report_builder.py` (root, tracked) holding all ReportLab

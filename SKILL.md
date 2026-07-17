@@ -42,7 +42,7 @@ to general knowledge of what a "typical" client in this situation might want.
 
 ## Versioning
 
-Current version: **0.20.0** (see `VERSION` and `CHANGELOG.md`).
+Current version: **0.20.1** (see `VERSION` and `CHANGELOG.md`).
 
 This project follows [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) and is
 pre-1.0: the major version stays at `0` throughout initial development. Major only moves to
@@ -146,8 +146,8 @@ Users must never see backend internals. This applies at every layer of the stack
 - **Never log personally identifiable information in detail.** Log only name and email for audit purposes; do not log full form responses.
 - **Never share intake PDFs** outside the consultant's email inbox. The files contain sensitive career and financial information.
 - **Temp files are ephemeral.** The server deletes them after each submission. Do not read from them after the response is sent.
-- **The `generate_security_pdf.py` script is gitignored** — it contains internal audit findings not for client or public view.
-- **Never name a real client anywhere — not just in `CHANGELOG.md`, a commit message, a git tag, or a GitHub Release, but also in `generate_design_pdf.py`, `design_process.pdf`, or any other file, tracked or gitignored.** Gitignored and "private" are not the same as safe: a local file can still be copied, screen-shared, or committed by accident later. Describe the motivating incident generically instead (e.g. "two prior thin-data intakes", "a client plan generated before this rule existed").
+- **The `generate_security_pdf.py` script is gitignored** — it contains internal audit findings not for client or public view. Its output, `extras/security.pdf`, lives in `extras/` — not `Clients/` — since it's an internal project document, not client data; `extras/` is gitignored too. `generate_design_pdf.py`'s output, `extras/design_process.pdf`, follows the same rule for the same reason.
+- **Never name a real client anywhere — not just in `CHANGELOG.md`, a commit message, a git tag, or a GitHub Release, but also in `generate_design_pdf.py`, `extras/design_process.pdf`, or any other file, tracked or gitignored.** Gitignored and "private" are not the same as safe: a local file can still be copied, screen-shared, or committed by accident later. Describe the motivating incident generically instead (e.g. "two prior thin-data intakes", "a client plan generated before this rule existed").
 - **The one exception is Alex Mercer** (`Clients/Alex Mercer/`) — a fictitious client set up specifically to demo the service, safe to name anywhere, including in SKILL.md itself and any future report or reference example. When a rule or decision needs a concrete example to point to, use Alex Mercer's folder rather than inventing a new placeholder or reaching for a real client's data.
 
 ### When making changes to the form or server
