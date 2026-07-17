@@ -106,7 +106,7 @@ Users must never see backend internals. This applies at every layer of the stack
 
 **Startup / cold start**
 - The hosted entry point for clients is the loading page at `https://career-transition-loading.onrender.com`, not the Flask app URL directly. Share only the loading page URL.
-- The loading page (`loading/index.html`) shows a branded waiting screen with an estimated countdown. It polls `/_health` and redirects automatically — clients never see Render's server-log loading screen.
+- The loading page (`loading/index.html`) shows a branded waiting screen (spinner + "Preparing your form…" tagline, no visible countdown/timer). It polls `/_health` and redirects automatically — clients never see Render's server-log loading screen.
 - If the loading page URL or the Flask app URL ever changes, update both `loading/index.html` (`APP_URL` constant) and this document.
 
 **When making changes to error handling or startup**
