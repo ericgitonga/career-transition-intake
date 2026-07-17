@@ -6,6 +6,33 @@ pre-1.0 (initial development) — the major version stays at `0` until a stable,
 production-ready release is declared. MINOR bumps cover new features and
 user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
 
+## [0.20.0] - 2026-07-17
+### Added
+- Extracted a shared `report_builder.py` (root, tracked) holding all ReportLab
+  palette, paragraph styles, layout helpers, and per-section rendering logic
+  that used to be duplicated at the top of every client's own
+  `generate_plan.py` (~250 lines of identical boilerplate each). Added a
+  thin root-level `generate_plan.py` CLI (`python3 generate_plan.py
+  "<Client Name>"`) that loads `Clients/<Name>/plan_data.py`'s `PLAN` dict
+  and calls `report_builder.build_plan()`.
+- Defined the `plan_data.py` schema: fixed-shape sections (2, 3, 5, 8, 9, 11)
+  as structured lists of dicts; freeform sections (1, 4, 6, 7, 10, 12) as a
+  generic `blocks` list (paragraph / shaded_box / two_col / table) rendered
+  by one shared `render_blocks()` — no per-client ReportLab code anywhere.
+- Migrated Alex Mercer's plan to `Clients/Alex Mercer/plan_data.py` as the
+  round-trip proof and removed the old per-client `generate_plan.py`; the
+  rendered PDF is byte-for-byte equivalent in content (17 pages, 5,252 words,
+  confirmed via `pdftotext` diff — the only differences were word-wrap order
+  inside the Monthly Action Tracker table, not missing content).
+- Existing real clients' `generate_plan.py` scripts are left as delivered
+  (not retroactively migrated); new clients use the shared engine going
+  forward.
+- Updated SKILL.md (PDF generation approach, workflow steps 4–5, files to
+  keep in the client folder) to document the new architecture and updated
+  generate_design_pdf.py/design_process.pdf accordingly. (closes #31)
+
+tag: `v0.20.0`
+
 ## [0.19.3] - 2026-07-17
 ### Changed
 - Backfilled the git tags CHANGELOG.md had already been claiming existed

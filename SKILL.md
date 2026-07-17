@@ -42,7 +42,7 @@ to general knowledge of what a "typical" client in this situation might want.
 
 ## Versioning
 
-Current version: **0.19.3** (see `VERSION` and `CHANGELOG.md`).
+Current version: **0.20.0** (see `VERSION` and `CHANGELOG.md`).
 
 This project follows [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) and is
 pre-1.0: the major version stays at `0` throughout initial development. Major only moves to
@@ -193,13 +193,16 @@ Step 3 — Download and read
          constraints, and context. Then read the CV(s) and JD for factual extraction.
 
 Step 4 — Generate the plan
-         Run the invocation below. The intake PDF replaces the manual Q&A; the
-         uploaded documents supply the factual raw material. If portfolio_has_work
-         is "yes", fetch each portfolio link with WebFetch before drafting Section 8.
+         Write Clients/[ClientName]/plan_data.py (content only — see "PDF generation
+         approach" below for the schema) from the intake PDF, CV(s), and JD. The intake
+         PDF replaces the manual Q&A; the uploaded documents supply the factual raw
+         material. If portfolio_has_work is "yes", fetch each portfolio link with
+         WebFetch before drafting Section 8's content. Then run:
+         python3 generate_plan.py "[ClientName]"
 
 Step 5 — Deliver
-         Email [initials]_transition_plan.pdf to the client. Keep generate_plan.py
-         for re-runs when the client requests updates.
+         Email [initials]_transition_plan.pdf to the client. Keep plan_data.py
+         for re-runs when the client requests updates — edit the data, not the PDF.
 ```
 
 ---
@@ -560,7 +563,23 @@ Table: Milestone | Target Date | Status (blank column for client to fill in)
 Use Python with ReportLab (`reportlab` package). Do not use Markdown-to-PDF converters or
 browser-print pipelines — they cannot produce the table layouts and colour blocks this document requires.
 
-### Colour palette (default — adjust per brand preference)
+**One shared engine, not one script per client.** All ReportLab code — palette, paragraph
+styles, layout helpers, and per-section rendering — lives in the tracked, root-level
+`report_builder.py`. A client folder holds only `Clients/[ClientName]/plan_data.py`: a
+`PLAN` dict of content, no ReportLab imports at all. The root-level `generate_plan.py` CLI
+ties the two together:
+
+```
+python3 generate_plan.py "[ClientName]"
+```
+
+This loads `Clients/[ClientName]/plan_data.py`'s `PLAN` dict and calls
+`report_builder.build_plan(data, output_path)`. Never write a new `generate_plan.py`
+inside a client folder — if `report_builder.py` is missing a rendering capability a plan
+needs, extend `report_builder.py` itself so every future client benefits, then author
+`plan_data.py` against the extended schema.
+
+### Colour palette
 ```python
 NAVY  = "#1B2A4A"   # Primary dark: section headers, table headers
 TEAL  = "#0E7C7B"   # Secondary: h3 headings, alternating header colour
@@ -576,24 +595,37 @@ BLACK = "#1A1A1A"   # Body text
 - All margins: 1.27 cm (0.5 inch) — tight but readable
 - Footer: page number and document title, 8pt, centered
 
-### Key ReportLab patterns used
-- `SimpleDocTemplate` with `story` list pattern
-- `Table` + `TableStyle` for all structured content (no bare `Paragraph` grids)
-- `KeepTogether` to prevent section headers orphaning from first content
-- `PageBreak` after cover, roadmap overview, tracker, and positioning sections
-- `HRFlowable` for horizontal rules between sections
-- `ParagraphStyle` defined once at the top and reused throughout
+### `plan_data.py` schema
 
-### Helper functions to define
-- `section_header(text)` — navy background banner with white bold text
-- `shaded_box(content_rows)` — light grey box with rounded corners for callouts
-- `two_col(left_items, right_items)` — side-by-side bullet columns
-- `semester_card(sem_num, duration, title, objective, topics, deliverables, connects_to)` — full semester block
-- `rule(color, thickness)` — horizontal rule
+The `PLAN` dict has one top-level key per document element. Two shapes of section exist:
+
+- **Fixed-shape sections** (2, 3, 5, 8, 9, 11) have real layout logic of their own — a
+  priority-coloured skills-gap table, semester cards, a bold-first-column tracker — and
+  `report_builder.py` has a dedicated `render_section_N()` for each. Their `plan_data.py`
+  keys are structured lists of dicts (e.g. `section_3.skills_gap` is a list of
+  `{area, current, required, gap, when, priority}`, where `priority` is one of
+  `HIGH`/`MED`/`LOW`/`NONE`). See `report_builder.py`'s docstrings for each section's exact
+  field names.
+- **Freeform sections** (1, 4, 6, 7, 10, 12 use this for their prose portions) are a
+  `blocks` list rendered by the generic `render_blocks()`. Each block has an optional
+  `heading` plus exactly one of `paragraph` (str), `shaded_box` (a list of paragraphs,
+  each optionally `{"style": "h3"|"pitch", "space_after": N}`, and a `border`:
+  `"gold"|"teal"`), `two_col` (`{"left": [...], "right": [...]}`), or `table`
+  (`{"headers": [...], "rows": [[...]], "col_ratios": [...]}`). A block-level
+  `space_after` overrides the default 8pt spacer.
+
+Variable-length content (3 vs 7 semesters, an optional Year-2 track, entrepreneur vs
+job-seeker framing) falls out of plain list/dict length and presence — `report_builder.py`
+never special-cases a specific client's shape.
 
 ### Output
-- Save to the client's folder, named: `[initials]_transition_plan.pdf`
-- Print the output path on completion
+- `generate_plan.py` saves to the client's folder, named: `[initials]_transition_plan.pdf`
+- Prints the output path on completion
+
+### Reference example
+`Clients/Alex Mercer/plan_data.py` is the fictitious demo client's full plan, migrated to
+this schema as the round-trip proof (identical 17-page, 5,252-word output to the original
+one-off script). Use it as the template when drafting a new client's `plan_data.py`.
 
 ---
 
@@ -665,15 +697,19 @@ Clients/
     ├── [JD file]                         ← job description used for gap analysis
     ├── [Learning Plan file]              ← client's initial learning plan (if provided)
     ├── [Additional files]                ← any other documents uploaded by the client
-    ├── generate_plan.py                  ← the plan generation script (keep; re-run to update)
+    ├── plan_data.py                      ← the plan's content (keep; edit + re-run to update)
     └── [initials]_transition_plan.pdf    ← the deliverable
 ```
+
+No `generate_plan.py` in the client folder — that's the shared, root-level
+`report_builder.py` + `generate_plan.py` CLI (see "PDF generation approach" above).
 
 The intake PDF is the record of what the client told you. Keep it permanently — it is the
 audit trail if the client later disputes the framing or asks why certain choices were made.
 
-Always keep `generate_plan.py` alongside the PDF. If the client requests a change (date update,
-new target role, revised semester), edit the script and re-run — do not edit the PDF directly.
+Always keep `plan_data.py` alongside the PDF. If the client requests a change (date update,
+new target role, revised semester), edit `plan_data.py` and re-run
+`python3 generate_plan.py "[ClientName]"` — do not edit the PDF directly.
 
 ---
 
