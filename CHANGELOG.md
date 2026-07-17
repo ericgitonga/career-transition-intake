@@ -6,6 +6,22 @@ pre-1.0 (initial development) — the major version stays at `0` until a stable,
 production-ready release is declared. MINOR bumps cover new features and
 user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
 
+## [0.19.2] - 2026-07-17
+### Changed
+- Added a standing content rule to SKILL.md: every acronym or abbreviation a
+  client would not already know must be spelled out in full (acronym in
+  parentheses) the first time it appears anywhere in a generated plan, by
+  reading order, and used as the acronym alone afterwards, including inside
+  tables. Terms already standard in this workflow's vocabulary (CV, NGO, CEO,
+  PDF, currency codes) are exempt. Added a matching quality-checklist item.
+- Documented the decision in generate_design_pdf.py's Key Design Decisions
+  section and regenerated design_process.pdf.
+- Fixed Pauline Mwiki Maingi's existing plan (generate_plan.py /
+  PM_transition_plan.pdf), where IoD, COI, KIM, ARBS, BSc, and MSc were
+  either never expanded or expanded out of reading order. (closes #28)
+
+tag: `v0.19.2`
+
 ## [0.19.1] - 2026-07-15
 ### Changed
 - Reworded the two smaller "Preferred organisation stage" checkbox labels in

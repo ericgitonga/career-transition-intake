@@ -42,7 +42,7 @@ to general knowledge of what a "typical" client in this situation might want.
 
 ## Versioning
 
-Current version: **0.19.1** (see `VERSION` and `CHANGELOG.md`).
+Current version: **0.19.2** (see `VERSION` and `CHANGELOG.md`).
 
 This project follows [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) and is
 pre-1.0: the major version stays at `0` throughout initial development. Major only moves to
@@ -418,6 +418,18 @@ The intake PDF is structured in sections matching the form. Extract and record:
 
 Produce these sections in order. Each section has a fixed purpose; the content is client-specific.
 
+**Acronyms.** Spell out every acronym or abbreviation the client would not already know in full the
+first time it appears anywhere in the document (reading order, not section order), with the
+acronym in parentheses immediately after — e.g. "Institute of Directors (IoD)" — then use the
+acronym alone for every later mention, including in tables. This applies to organisation and
+credential acronyms introduced by the plan (e.g. IoD, COI, KIM, ARBS, TDPK, RBA, KRA, BSc, MSc).
+It does not apply to terms already standard in this workflow's own vocabulary — CV, NGO, CEO, PDF,
+and currency codes (KES, USD) — which stay unexpanded throughout, consistent with how they are
+used elsewhere in this document. Because roadmap/overview tables (Section 4) and reference tables
+placed later (Sections 6, 7) can each introduce the same acronym, check the full reading order
+before drafting those sections — the earliest mention wins the expansion, and every other section
+must defer to it.
+
 ### Cover Page
 - Full client name
 - Subtitle: "Career Transition Plan"
@@ -579,6 +591,8 @@ BLACK = "#1A1A1A"   # Body text
 - [ ] CV reframing table uses language from actual job postings, not generic HR-speak
 - [ ] Portfolio pieces are achievable without an employer or paid access
 - [ ] Monthly tracker rows match semester plan content (no inconsistencies)
+- [ ] Every acronym is spelled out in full on its first appearance (reading order) and used as the
+  acronym alone thereafter — check Section 4's roadmap table against Sections 5–7 for order conflicts
 - [ ] PDF renders without errors (`doc.build(story)` completes cleanly)
 - [ ] All pages have a footer with page number
 
