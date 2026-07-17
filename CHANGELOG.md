@@ -6,6 +6,23 @@ pre-1.0 (initial development) — the major version stays at `0` until a stable,
 production-ready release is declared. MINOR bumps cover new features and
 user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
 
+## [0.20.2] - 2026-07-17
+### Changed
+- `generate_design_pdf.py` is now tracked instead of gitignored: a check of
+  its content (every email address, every capitalised two-word phrase, every
+  SECRET_KEY/API_KEY-shaped string) confirmed it holds no client data or
+  real secrets — only project narrative, the approved fictitious Alex Mercer
+  example, a generic "Jane Doe" placeholder, and environment-variable
+  *names* already documented in tracked SKILL.md and render.yaml, never a
+  value. It had been gitignored only by inherited convention (grouped with
+  three other generators that do hold private data), not by its own
+  content. Its output, `extras/design_process.pdf`, stays gitignored as a
+  generated artefact.
+- Updated SKILL.md's client-data-handling rules and generate_design_pdf.py's
+  own Key Design Decisions section to document this. (closes #33)
+
+tag: `v0.20.2`
+
 ## [0.20.1] - 2026-07-17
 ### Changed
 - `generate_design_pdf.py` and `generate_security_pdf.py` now write their
