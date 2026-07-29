@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Career Transition Onboarding — Starting Up</title>
+  <title>Career Transition Planning — Starting Up</title>
   <style>
     :root { --navy:#1B2A4A; --teal:#0E7C7B; --gold:#C9A84C; }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -57,9 +57,9 @@
 </head>
 <body>
 <div class="card">
-  <div class="brand">Career Transition Onboarding</div>
+  <div class="brand">Career Transition Planning</div>
   <div class="spinner"></div>
-  <p class="tagline" id="tagline">Preparing your form&hellip;</p>
+  <p class="tagline" id="tagline">Preparing your plan&hellip;</p>
 </div>
 
 <script>
@@ -77,7 +77,7 @@
       const res = await fetch(HEALTH, { cache: "no-store" });
       if (res.ok) {
         redirecting = true;
-        tagline.textContent = "Ready — redirecting…";
+        tagline.textContent = "All set — taking you there…";
         setTimeout(() => { window.location.replace(APP_URL); }, 400);
       }
     } catch (_) {

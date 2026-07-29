@@ -6,6 +6,18 @@ pre-1.0 (initial development) — the major version stays at `0` until a stable,
 production-ready release is declared. MINOR bumps cover new features and
 user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
 
+## [0.20.4] - 2026-07-29
+### Changed
+- Reworded the cold-start loading page (`loading/index.html`, the
+  career-transition-loading Render static site — the actual public entry
+  point clients land on from the landing page's CTA) to match the same
+  brand voice as #34: brand wordmark and `<title>` changed from "Career
+  Transition Onboarding" to "Career Transition Planning", and the status
+  tagline reworded ("Preparing your plan…" / "All set — taking you
+  there…"). Polling/redirect behaviour unchanged. (closes #35)
+
+tag: `v0.20.4`
+
 ## [0.20.3] - 2026-07-29
 ### Changed
 - Reworded the form-header intro and the privacy paragraph in
