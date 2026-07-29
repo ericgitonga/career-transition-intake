@@ -6,6 +6,18 @@ pre-1.0 (initial development) — the major version stays at `0` until a stable,
 production-ready release is declared. MINOR bumps cover new features and
 user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
 
+## [0.20.3] - 2026-07-29
+### Changed
+- Reworded the form-header intro and the privacy paragraph in
+  `templates/index.html` to match the new career-transition landing page's
+  brand voice (confident, second-person, benefit-led) instead of the
+  original flatter, procedural copy — same substantive meaning throughout,
+  including every existing privacy commitment (used only to build the
+  plan, never shared/sold/used by a third party, files deleted immediately
+  after processing). (closes #34)
+
+tag: `v0.20.3`
+
 ## [0.20.2] - 2026-07-17
 ### Changed
 - `generate_design_pdf.py` is now tracked instead of gitignored: a check of
