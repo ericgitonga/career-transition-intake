@@ -42,7 +42,7 @@ to general knowledge of what a "typical" client in this situation might want.
 
 ## Versioning
 
-Current version: **0.20.2** (see `VERSION` and `CHANGELOG.md`).
+Current version: **0.20.4** (see `VERSION` and `CHANGELOG.md`).
 
 This project follows [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) and is
 pre-1.0: the major version stays at `0` throughout initial development. Major only moves to
@@ -53,11 +53,20 @@ contract or the plan-generation workflow.
 - **MINOR** — new features, new form fields/sections, new user-facing behaviour, new tooling.
 - **PATCH** — bug fixes, docs-only changes, refactors, repository housekeeping.
 
+One `VERSION`/`CHANGELOG.md` covers the whole repo as a single unit — including
+`loading/index.html`, which deploys separately as the career-transition-loading Render static
+site (see "Startup / cold start" below). A copy-only change to the loading page still gets its
+own version bump and dated `CHANGELOG.md` entry, exactly like a change to `app.py` or
+`templates/index.html` would (e.g. v0.20.4 for the loading-page copy rework alone).
+
 Before committing any change: bump the version in `VERSION`, add a dated entry to
 `CHANGELOG.md` (referencing the GitHub issue number), and update this line if the version
 changed.
 
 ### Tags and GitHub Releases
+
+Before running any `gh`/`git` command that touches GitHub, confirm which account to use — ask
+whether to use the default (`ericgitonga`) or a different one. Do not assume silently.
 
 Every version bump gets a real, pushed git tag and a published GitHub Release — a `CHANGELOG.md`
 entry claiming a version alone is not sufficient. After the version-bump commit is pushed:
@@ -131,7 +140,7 @@ Users must never see backend internals. This applies at every layer of the stack
 
 **Startup / cold start**
 - The hosted entry point for clients is the loading page at `https://career-transition-loading.onrender.com`, not the Flask app URL directly. Share only the loading page URL.
-- The loading page (`loading/index.html`) shows a branded waiting screen (spinner + "Preparing your form…" tagline, no visible countdown/timer). It polls `/_health` and redirects automatically — clients never see Render's server-log loading screen.
+- The loading page (`loading/index.html`) shows a branded waiting screen (spinner + "Preparing your plan…" tagline, no visible countdown/timer). It polls `/_health` and redirects automatically — clients never see Render's server-log loading screen.
 - If the loading page URL or the Flask app URL ever changes, update both `loading/index.html` (`APP_URL` constant) and this document.
 
 **When making changes to error handling or startup**

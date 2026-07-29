@@ -6,6 +6,18 @@ pre-1.0 (initial development) — the major version stays at `0` until a stable,
 production-ready release is declared. MINOR bumps cover new features and
 user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
 
+## [0.20.5] - 2026-07-29
+### Changed
+- SKILL.md's Versioning section now explicitly notes that the repo's single
+  `VERSION`/`CHANGELOG.md` covers `loading/index.html` too, deployed
+  separately as the career-transition-loading Render static site — a
+  copy-only change there still needs its own version bump and dated
+  `CHANGELOG.md` entry, exactly like `app.py`/`templates/index.html`.
+  Also refreshed the stale "Current version" line and a quoted loading-page
+  tagline string that #34/#35 had already changed in practice. (closes #36)
+
+tag: `v0.20.5`
+
 ## [0.20.4] - 2026-07-29
 ### Changed
 - Reworded the cold-start loading page (`loading/index.html`, the
