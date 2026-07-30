@@ -3,7 +3,7 @@ Flask application for the Career Transition client onboarding intake form.
 
 Security hardening applied (see Clients/security.pdf for full audit):
   S-01  CSRF protection via Flask-WTF (Phase 1)
-  S-02  Upload size limited to 10 MB via MAX_CONTENT_LENGTH (Phase 1)
+  S-02  Upload size limited to 4 MB via MAX_CONTENT_LENGTH (Phase 1)
   S-03  File extension whitelist on all uploads via _safe_suffix() (Phase 1)
   S-04  Bootstrap CDN links use Subresource Integrity hashes (HTML, Phase 1)
   S-05  Rate limiting via Flask-Limiter (Phase 2)
@@ -75,7 +75,12 @@ if not _secret:
 app.config["SECRET_KEY"] = _secret
 
 # ── S-02: Reject oversized uploads before they reach route handlers ───────────
-app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB
+# Capped at 4 MB, not the platform-agnostic 10 MB this used to be: real
+# submissions to date top out around 450 KB per file (see
+# extras/deepdive_flask_to_vercel.md §4), and staying under 4 MB keeps this
+# app deployable as-is on Vercel Functions, whose request body limit is a
+# hard 4.5 MB.
+app.config["MAX_CONTENT_LENGTH"] = 4 * 1024 * 1024  # 4 MB
 
 # ── S-01: CSRF protection for all state-changing POST routes ──────────────────
 csrf = CSRFProtect(app)
@@ -649,7 +654,7 @@ def submit():
           - ``"skipped"`` — ``RESEND_API_KEY`` not configured; email not attempted.
 
     Returns HTTP 400 if ``full_name`` is missing or an uploaded file type is not whitelisted.
-    Returns HTTP 413 if the total upload size exceeds 10 MB (raised by Flask before this handler).
+    Returns HTTP 413 if the total upload size exceeds 4 MB (raised by Flask before this handler).
     Returns HTTP 429 if the rate limit is exceeded (raised by Flask-Limiter).
     Returns HTTP 500 if PDF generation raises an exception.
     """

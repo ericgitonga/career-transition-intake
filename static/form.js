@@ -193,7 +193,7 @@ document.getElementById('form').addEventListener('submit', async function (e) {
       } else if (res.status === 400) {
         status.textContent = txt;
       } else if (res.status === 413) {
-        status.textContent = 'Your files are too large. The total upload size must be under 10 MB.';
+        status.textContent = 'Your files are too large. The total upload size must be under 4 MB.';
       } else if (res.status === 429) {
         status.textContent = 'Too many submissions. Please wait a few minutes and try again.';
       } else {
