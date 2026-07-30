@@ -6,6 +6,19 @@ pre-1.0 (initial development) — the major version stays at `0` until a stable,
 production-ready release is declared. MINOR bumps cover new features and
 user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
 
+## [0.21.4] - 2026-07-30
+### Fixed
+- `/submit` now always bundles the consultant's emailed attachment into a
+  ZIP, even with zero client uploads — previously the ZIP was only built
+  when the client attached at least one file, so the consultant received
+  two different attachment formats depending on client behavior. Found
+  while smoke-testing the Vercel migration (#38) with a full real-world
+  submission (Alex Mercer's actual original intake data), but unrelated to
+  the migration itself. `_build_zip()` already handled an empty uploads
+  list correctly — the intake PDF alone still gets zipped. (closes #39)
+
+tag: `v0.21.4`
+
 ## [0.21.3] - 2026-07-30
 ### Fixed
 - Fixed `vercel.json`: an explicit `functions: {"app.py": {...}}` block

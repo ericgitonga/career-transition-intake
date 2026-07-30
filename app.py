@@ -550,22 +550,22 @@ def build_pdf(d, path):
 def send_email(attachment_path, attachment_name, data, has_uploads: bool):
     """Send the intake package to the consultant via Resend.
 
-    When the client uploaded supporting documents (CV, JD, etc.) the
-    ``attachment_path`` points to a ZIP archive (``AlexM.zip``) that already
-    contains the intake PDF plus every upload.  When no documents were
-    uploaded, ``attachment_path`` is just the bare intake PDF.
+    ``attachment_path`` always points to a ZIP archive (``AlexM.zip``)
+    containing the intake PDF, plus every upload the client attached, if any
+    — the consultant's emailed attachment is a consistent format regardless
+    of whether the client uploaded anything.
 
     Uses the Resend HTTP API (not SMTP) so the call succeeds on hosting
     providers that block outbound port 587.  Fields used in the email
     subject/body are sanitised with ``_sanitize()`` (S-12).
 
     Args:
-        attachment_path: Absolute path to the file to attach (zip or PDF).
+        attachment_path: Absolute path to the ZIP archive to attach.
         attachment_name: Consultant-facing filename for the attachment,
-                         e.g. ``"AlexM.zip"`` or ``"AlexM-intake.pdf"``.
+                         e.g. ``"AlexM.zip"``.
         data:            Dictionary of form field values (subject/body copy).
-        has_uploads:     True when uploads are bundled in the attachment so
-                         the email body can mention them.
+        has_uploads:     True when uploads are bundled in the ZIP so the
+                         email body can mention them.
 
     Raises:
         KeyError:  If ``RESEND_API_KEY`` is not set in the environment.
@@ -586,8 +586,8 @@ def send_email(attachment_path, attachment_name, data, has_uploads: bool):
         f"Location: {location}\n"
         f"Timeline: {timeline}\n"
         f"Target:   {target}\n\n"
-        f"Full intake responses are in the attached PDF."
-        + ("\nSupporting documents (CV, JD, etc.) are bundled in the ZIP."
+        f"Full intake responses are in the attached ZIP."
+        + ("\nSupporting documents (CV, JD, etc.) are bundled in there too."
            if has_uploads else "")
     )
 
@@ -812,14 +812,12 @@ def submit():
         _log_field(data.get("time_on_form_seconds", "")),
     )
 
-    # When uploads are present, bundle everything into a ZIP; otherwise email
-    # just the intake PDF.  zip_path is None when no uploads were received.
-    zip_path = None
-    if uploads:
-        zip_path, zip_name = _build_zip(slug, pdf_path, pdf_name, uploads)
-        attachment_path, attachment_name = zip_path, zip_name
-    else:
-        attachment_path, attachment_name = pdf_path, pdf_name
+    # Always bundle into a ZIP, even with zero uploads, so the consultant's
+    # emailed attachment is a consistent format regardless of how many files
+    # (if any) the client attached. _build_zip handles an empty uploads list
+    # fine -- the intake PDF alone still gets zipped.
+    zip_path, zip_name = _build_zip(slug, pdf_path, pdf_name, uploads)
+    attachment_path, attachment_name = zip_path, zip_name
 
     email_status = "skipped"
     if os.environ.get("RESEND_API_KEY"):
