@@ -6,6 +6,18 @@ pre-1.0 (initial development) — the major version stays at `0` until a stable,
 production-ready release is declared. MINOR bumps cover new features and
 user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
 
+## [0.21.1] - 2026-07-30
+### Added
+- Added `vercel.json`, capping the Flask function's `maxDuration` at 60s —
+  generous for this app's actual synchronous work (PDF build + one Resend
+  call), while bounding worst-case cost well under Hobby's 300s
+  default/max. No relocation needed for `app.py`; Vercel auto-detects it at
+  the project root. Third step of the Flask-to-Vercel migration (see
+  `extras/deepdive_flask_to_vercel.md`). No effect on the current Render
+  deployment, which doesn't read this file. (refs #38)
+
+tag: `v0.21.1`
+
 ## [0.21.0] - 2026-07-30
 ### Changed
 - Lowered `MAX_CONTENT_LENGTH` from 10 MB to 4 MB. Real submissions to date
