@@ -31,3 +31,6 @@ __pycache__/
 # irrelevant to this Python/Flask app, which uses redis-py directly
 .agents/
 skills-lock.json
+
+# Consultant methodology/business know-how — kept local, not public
+SKILL.md

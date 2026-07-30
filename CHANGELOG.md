@@ -6,6 +6,15 @@ pre-1.0 (initial development) — the major version stays at `0` until a stable,
 production-ready release is declared. MINOR bumps cover new features and
 user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
 
+## [0.21.7] - 2026-07-30
+### Changed
+- Untracked `SKILL.md` from git — it holds the consultant's plan-generation
+  methodology and business know-how, kept local going forward rather than
+  public on GitHub. Stays on disk unchanged; `git rm --cached` only, no
+  content change.
+
+tag: `v0.21.7`
+
 ## [0.21.6] - 2026-07-30
 ### Added
 - Added a "Capturing development discussion in issue comments" policy to
