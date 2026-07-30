@@ -92,10 +92,21 @@ app.config["MAX_CONTENT_LENGTH"] = 4 * 1024 * 1024  # 4 MB
 csrf = CSRFProtect(app)
 
 # ── S-05: Rate limiting — generous enough for real clients, stops floods ──────
+# storage_uri defaults to Flask-Limiter's own "memory://" default, correct
+# for Render's long-lived gunicorn workers. Set RATELIMIT_STORAGE_URI to a
+# rediss:// URL once this app runs on Vercel: Fluid Compute's auto-scaling
+# means each concurrent instance would otherwise keep its own in-memory
+# counter, silently multiplying every limit below by however many instances
+# happen to be warm. Get the actual connection string from the Upstash
+# console's "Connect" tab (Vercel's own Marketplace docs only surface a REST
+# endpoint via UPSTASH_REDIS_REST_URL/TOKEN for the JS @upstash/redis client
+# — Flask-Limiter needs the standard redis://⁄rediss:// protocol instead,
+# which every Upstash database also exposes, just under a different name).
 limiter = Limiter(
     get_remote_address,
     app=app,
     default_limits=["200 per day", "50 per hour"],
+    storage_uri=os.environ.get("RATELIMIT_STORAGE_URI", "memory://"),
 )
 
 # ── S-03 / S-14: Allowed upload extensions (server-enforced whitelist) ────────

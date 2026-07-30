@@ -6,6 +6,29 @@ pre-1.0 (initial development) — the major version stays at `0` until a stable,
 production-ready release is declared. MINOR bumps cover new features and
 user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
 
+## [0.21.2] - 2026-07-30
+### Added
+- Made Flask-Limiter's `storage_uri` configurable via `RATELIMIT_STORAGE_URI`,
+  defaulting to `"memory://"` (Flask-Limiter's own default — Render's
+  behavior is unchanged). Fourth step of the Flask-to-Vercel migration (see
+  `extras/deepdive_flask_to_vercel.md`): on Vercel, Fluid Compute's
+  auto-scaling would otherwise give each concurrent instance its own
+  in-memory rate-limit counter, silently multiplying every limit by however
+  many instances are warm. Setting the env var to a `rediss://` URL from an
+  Upstash Redis database's "Connect" tab switches to shared, Redis-backed
+  storage — confirmed by construction (`RedisStorage` selected when the env
+  var is set, `MemoryStorage` when it's unset). Added `redis==7.4.1` to
+  `requirements.txt` — pinned below 8.0.0, the ceiling `limits` (Flask-
+  Limiter's dependency) requires for its `redis` extra. Getting the actual
+  connection string remains a manual step: Vercel's own Marketplace docs
+  for Upstash only surface a REST endpoint
+  (`UPSTASH_REDIS_REST_URL`/`TOKEN`) for the JS `@upstash/redis` client,
+  which Flask-Limiter can't use — the standard `redis://`/`rediss://` string
+  every Upstash database also exposes has to be copied from the Upstash
+  console directly. (refs #38)
+
+tag: `v0.21.2`
+
 ## [0.21.1] - 2026-07-30
 ### Added
 - Added `vercel.json`, capping the Flask function's `maxDuration` at 60s —
