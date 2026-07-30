@@ -42,7 +42,7 @@ to general knowledge of what a "typical" client in this situation might want.
 
 ## Versioning
 
-Current version: **0.21.5** (see `VERSION` and `CHANGELOG.md`).
+Current version: **0.21.6** (see `VERSION` and `CHANGELOG.md`).
 
 This project follows [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) and is
 pre-1.0: the major version stays at `0` throughout initial development. Major only moves to
@@ -90,6 +90,14 @@ project's `CHANGELOG.md` wording or level of detail. The release body must be bu
 
 If several commits land before a release is cut, only tag and release once, at the final
 version for that batch of work — do not create a tag/release per intermediate commit.
+
+**Capturing development discussion in issue comments.** Whenever an issue's implementation
+involves a real decision, course-correction, scope call the app owner made, or a noteworthy
+finding along the way (not just "built exactly as described") — post a `gh issue comment`
+summarizing it, in addition to (not instead of) recording it in `CHANGELOG.md`. This keeps the
+issue thread itself a readable record of what actually happened, not just the final commit/
+CHANGELOG line. Trivial, single-shot issues with no real discussion don't need a comment —
+don't manufacture one just to have one.
 
 ---
 

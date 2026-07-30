@@ -6,6 +6,17 @@ pre-1.0 (initial development) — the major version stays at `0` until a stable,
 production-ready release is declared. MINOR bumps cover new features and
 user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
 
+## [0.21.6] - 2026-07-30
+### Added
+- Added a "Capturing development discussion in issue comments" policy to
+  `SKILL.md`'s Versioning section, mirroring the umoja-voices project's own
+  convention: post a `gh issue comment` summarizing real decisions,
+  course-corrections, or noteworthy findings, in addition to (not instead
+  of) the `CHANGELOG.md` entry, so the issue thread itself stays a
+  readable record.
+
+tag: `v0.21.6`
+
 ## [0.21.5] - 2026-07-30
 ### Added
 - Added a "Testing the Intake Form" section to `SKILL.md`: use Alex
