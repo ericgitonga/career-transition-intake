@@ -53,7 +53,13 @@ from reportlab.platypus import (
     SimpleDocTemplate, Spacer, Table, TableStyle,
 )
 
-app = Flask(__name__)
+# static_folder is "public" (not Flask's default "static"), served at the
+# URL root rather than under /static/: Vercel's Flask guide requires static
+# assets to live in public/** so its CDN can serve them directly, bypassing
+# the Function entirely. Setting static_url_path="" keeps that same public/
+# layout working identically on Render today, since url_for("static", ...)
+# resolves against whatever static_url_path is configured either way.
+app = Flask(__name__, static_folder="public", static_url_path="")
 RECIPIENT = "gitonga@gmail.com"
 APP_VERSION = (Path(__file__).parent / "VERSION").read_text().strip()
 

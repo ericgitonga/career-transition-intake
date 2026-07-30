@@ -6,6 +6,24 @@ pre-1.0 (initial development) — the major version stays at `0` until a stable,
 production-ready release is declared. MINOR bumps cover new features and
 user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
 
+## [0.21.0] - 2026-07-30
+### Changed
+- Lowered `MAX_CONTENT_LENGTH` from 10 MB to 4 MB. Real submissions to date
+  top out around 450 KB per file, and staying under 4 MB keeps the app
+  deployable as-is on Vercel Functions, whose request body limit is a hard
+  4.5 MB — the first step of the Flask-to-Vercel migration (see
+  `extras/deepdive_flask_to_vercel.md`). Updated the 413 error message
+  (`static/form.js`) and docstrings/security notes (`app.py`) to match.
+  (refs #38)
+- Moved the app's static asset (`form.js`) from `static/` to `public/`, and
+  switched Flask's `static_folder`/`static_url_path` so it's served at the
+  URL root (`/form.js`) instead of under `/static/`. Required by Vercel's
+  Flask guide, which expects static assets under `public/**` so its CDN can
+  serve them directly instead of through the Function; behaviorally
+  identical on the current Render deployment. (refs #38)
+
+tag: `v0.21.0`
+
 ## [0.20.5] - 2026-07-29
 ### Changed
 - SKILL.md's Versioning section now explicitly notes that the repo's single
