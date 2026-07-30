@@ -6,6 +6,28 @@ pre-1.0 (initial development) — the major version stays at `0` until a stable,
 production-ready release is declared. MINOR bumps cover new features and
 user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
 
+## [0.21.3] - 2026-07-30
+### Fixed
+- Fixed `vercel.json`: an explicit `functions: {"app.py": {...}}` block
+  disabled Vercel's zero-config Flask auto-detection entirely (build
+  succeeded but produced no Serverless Function at all — every route
+  404'd). Replaced with `"framework": "flask"`, confirmed working end to
+  end against a real preview deployment: `/`, `/_health`, `/form.js`, and
+  `POST /submit` (multi-file upload, PDF build, ZIP bundling, Resend call,
+  Redis-backed rate limiting) all verified against the actual Vercel
+  runtime, not just docs. (refs #38)
+### Added
+- Added `.vercelignore`. `vercel deploy` does **not** respect `.gitignore`
+  for what gets uploaded — confirmed via `vercel deploy --dry --json`
+  before ever running a real deploy, which showed `Clients/` (real client
+  CVs, personal documents, 8.3MB), `extras/`, `.agents/`, `.claude/`, and
+  the private report generators would otherwise all be uploaded to Vercel.
+  Also excludes `.python-version` (pins 3.11.9 for local pyenv, conflicts
+  with Vercel's Python 3.12 default) and `render.yaml`/`loading/`
+  (Render-specific, unused on Vercel). (refs #38)
+
+tag: `v0.21.3`
+
 ## [0.21.2] - 2026-07-30
 ### Added
 - Made Flask-Limiter's `storage_uri` configurable via `RATELIMIT_STORAGE_URI`,

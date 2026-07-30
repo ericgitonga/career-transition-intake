@@ -1,0 +1,31 @@
+# vercel deploy does NOT respect .gitignore for what gets uploaded -- these
+# exclusions are load-bearing, not cosmetic. Verified via `vercel deploy
+# --dry --json`, which showed Clients/ (real client CVs, personal
+# documents), extras/, .agents/, .claude/, and the private report
+# generators would all otherwise be uploaded to Vercel.
+
+# Client folders — never upload client data
+Clients/
+
+# Business docs/audit findings/spike research — not needed at runtime
+extras/
+
+# Private report generators (contain client data or internal audit findings)
+generate_security_pdf.py
+generate_feedback_pdf.py
+generate_selfhosting_pdf.py
+
+# Local Claude Code settings and JS-SDK reference skills — irrelevant to
+# this app's runtime, never meant to leave this machine
+.claude/
+.agents/
+skills-lock.json
+
+# Render-specific, unused on Vercel
+render.yaml
+loading/
+
+# Local pyenv version pin (3.11.9) -- conflicts with Vercel's Python
+# runtime, which defaults to 3.12 and expects requires-python==3.12.*.
+# Irrelevant to Render too, which doesn't read this file.
+.python-version
