@@ -21,11 +21,6 @@ generate_selfhosting_pdf.py
 .agents/
 skills-lock.json
 
-# Render-specific, unused on Vercel
-render.yaml
-loading/
-
 # Local pyenv version pin (3.11.9) -- conflicts with Vercel's Python
 # runtime, which defaults to 3.12 and expects requires-python==3.12.*.
-# Irrelevant to Render too, which doesn't read this file.
 .python-version

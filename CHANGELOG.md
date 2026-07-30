@@ -6,6 +6,20 @@ pre-1.0 (initial development) — the major version stays at `0` until a stable,
 production-ready release is declared. MINOR bumps cover new features and
 user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
 
+## [0.21.8] - 2026-07-30
+### Removed
+- Removed `render.yaml` and `loading/index.html` — both Render services
+  (`career-transition-intake`, `career-transition-loading`) have been
+  deleted now that the Vercel migration (#38) is verified and cut over
+  (landing page CTA now points at `https://career-transition-intake.vercel.app`
+  in production). Stripped `/_health`'s CORS headers, which existed solely
+  for the loading page's cross-origin polling — the endpoint itself stays,
+  as a plain liveness probe. Updated `README.md` and the local `SKILL.md`
+  to stop pointing at the dead loading-page URL and describe the current
+  Vercel deployment instead of the old Render one. (closes #40)
+
+tag: `v0.21.8`
+
 ## [0.21.7] - 2026-07-30
 ### Changed
 - Untracked `SKILL.md` from git — it holds the consultant's plan-generation

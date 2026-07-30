@@ -64,10 +64,13 @@ RECIPIENT = "gitonga@gmail.com"
 APP_VERSION = (Path(__file__).parent / "VERSION").read_text().strip()
 
 # ── S-09: Secret key ──────────────────────────────────────────────────────────
-# On Render (production) SECRET_KEY is set as an environment variable via the
-# dashboard.  Locally, if it is absent, we auto-generate a random key for the
-# current process so development is frictionless.  The trade-off is that CSRF
-# tokens are invalidated on every restart, which is acceptable in development.
+# In production SECRET_KEY is set as a fixed Vercel environment variable —
+# critical on Vercel specifically, since a randomly-generated fallback would
+# differ per Fluid Compute instance, causing intermittent CSRF mismatches
+# under concurrent traffic. Locally, if it's absent, we auto-generate a
+# random key for the current process so development is frictionless; the
+# trade-off is that CSRF tokens are invalidated on every restart, which is
+# acceptable in development.
 _secret = os.environ.get("SECRET_KEY", "")
 if not _secret:
     _secret = secrets.token_hex(32)
@@ -75,7 +78,7 @@ if not _secret:
     warnings.warn(
         "SECRET_KEY not set — using a randomly generated key. "
         "CSRF tokens will be invalidated on restart. "
-        "Set SECRET_KEY in your environment (or Render dashboard) for production.",
+        "Set SECRET_KEY as a fixed environment variable for production.",
         stacklevel=1,
     )
 app.config["SECRET_KEY"] = _secret
@@ -92,16 +95,18 @@ app.config["MAX_CONTENT_LENGTH"] = 4 * 1024 * 1024  # 4 MB
 csrf = CSRFProtect(app)
 
 # ── S-05: Rate limiting — generous enough for real clients, stops floods ──────
-# storage_uri defaults to Flask-Limiter's own "memory://" default, correct
-# for Render's long-lived gunicorn workers. Set RATELIMIT_STORAGE_URI to a
-# rediss:// URL once this app runs on Vercel: Fluid Compute's auto-scaling
-# means each concurrent instance would otherwise keep its own in-memory
-# counter, silently multiplying every limit below by however many instances
-# happen to be warm. Get the actual connection string from the Upstash
-# console's "Connect" tab (Vercel's own Marketplace docs only surface a REST
-# endpoint via UPSTASH_REDIS_REST_URL/TOKEN for the JS @upstash/redis client
-# — Flask-Limiter needs the standard redis://⁄rediss:// protocol instead,
-# which every Upstash database also exposes, just under a different name).
+# storage_uri defaults to Flask-Limiter's own "memory://", used only as a
+# local-dev fallback now. In production, RATELIMIT_STORAGE_URI is set to a
+# rediss:// URL (Upstash Redis, provisioned via the Vercel Marketplace) —
+# required on Vercel's Fluid Compute, whose auto-scaling means each
+# concurrent instance would otherwise keep its own in-memory counter,
+# silently multiplying every limit below by however many instances happen
+# to be warm. The connection string comes from the Upstash console's
+# "Connect" tab, not from Vercel's own Marketplace docs, which only surface
+# a REST endpoint via UPSTASH_REDIS_REST_URL/TOKEN for the JS @upstash/redis
+# client — Flask-Limiter needs the standard redis://⁄rediss:// protocol
+# instead, which every Upstash database also exposes, just under a
+# different name.
 limiter = Limiter(
     get_remote_address,
     app=app,
@@ -606,23 +611,19 @@ def send_email(attachment_path, attachment_name, data, has_uploads: bool):
 
 @app.route("/_health")
 def health():
-    """Lightweight liveness probe for the Render static-site loading page.
+    """Lightweight liveness probe.
 
-    Returns a minimal JSON response immediately so the loading page can detect
-    when the app has finished its cold start and is ready to serve the form.
-    CORS headers are added for the companion static loading site.
+    Originally existed for a Render static-site loading page to poll while
+    working around Render's free-tier cold start; that page (and Render
+    entirely) is gone now that this app runs on Vercel's Fluid Compute,
+    whose cold starts are sub-second. Kept as a plain, CORS-free liveness
+    endpoint for general monitoring/debugging.
     """
-    resp = app.response_class(
+    return app.response_class(
         response='{"status":"ok"}',
         status=200,
         mimetype="application/json",
     )
-    loading_origin = os.environ.get(
-        "LOADING_SITE_ORIGIN", "https://career-transition-loading.onrender.com"
-    )
-    resp.headers["Access-Control-Allow-Origin"] = loading_origin
-    resp.headers["Access-Control-Allow-Methods"] = "GET"
-    return resp
 
 
 @app.route("/")
