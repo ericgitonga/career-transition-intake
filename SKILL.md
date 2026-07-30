@@ -42,7 +42,7 @@ to general knowledge of what a "typical" client in this situation might want.
 
 ## Versioning
 
-Current version: **0.21.4** (see `VERSION` and `CHANGELOG.md`).
+Current version: **0.21.5** (see `VERSION` and `CHANGELOG.md`).
 
 This project follows [Semantic Versioning](https://semver.org) (MAJOR.MINOR.PATCH) and is
 pre-1.0: the major version stays at `0` throughout initial development. Major only moves to
@@ -90,6 +90,26 @@ project's `CHANGELOG.md` wording or level of detail. The release body must be bu
 
 If several commits land before a release is cut, only tag and release once, at the final
 version for that batch of work — do not create a tag/release per intermediate commit.
+
+---
+
+## Testing the Intake Form
+
+Use **Alex Mercer's** data (`Clients/Alex Mercer/`) for any testing of the form that requires
+realistic field values or file uploads — a deploy smoke test, a validation-logic check, a
+migration test, anything that needs more than a throwaway "Smoke Test" placeholder. He's
+fictional, so there's no real-client privacy concern, and `Alex-Intake.pdf` already has a full
+set of original answers across every section (`pdftotext -layout "Clients/Alex Mercer/Alex-Intake.pdf" -`
+to read them back out), plus real upload files to attach (`Alex-CV.pdf`, `Alex-JD.pdf`,
+`Alex-LI.pdf`).
+
+When testing against a real `/submit` endpoint (not just unit-level), remember:
+- Flask-WTF's CSRF protection requires both a session cookie (from a prior `GET /`) and a
+  matching `Referer` header on HTTPS requests — a bare `csrf_token` field alone 400s.
+- `/submit` requires either a `cv_file` upload or at least one background-fallback field
+  (`current_title`, `current_industry`, `years_experience`, `existing_certs`, `key_skills`)
+  filled in — omitting both 400s regardless of how many other fields are set.
+- `/submit` is rate-limited (5/minute, 20/hour) — space out repeated test submissions.
 
 ---
 

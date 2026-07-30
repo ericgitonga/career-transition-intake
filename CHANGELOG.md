@@ -6,6 +6,19 @@ pre-1.0 (initial development) — the major version stays at `0` until a stable,
 production-ready release is declared. MINOR bumps cover new features and
 user-facing changes; PATCH bumps cover fixes, docs, and housekeeping.
 
+## [0.21.5] - 2026-07-30
+### Added
+- Added a "Testing the Intake Form" section to `SKILL.md`: use Alex
+  Mercer's data (`Clients/Alex Mercer/`) for any form testing that needs
+  realistic field values or file uploads — fictional, so no real-client
+  privacy concern, and `Alex-Intake.pdf` already has a full set of
+  original answers plus real upload files. Also documents the CSRF
+  Referer-header requirement, the CV-or-fallback-fields validation rule,
+  and the rate limit, discovered while smoke-testing the Vercel migration
+  (#38).
+
+tag: `v0.21.5`
+
 ## [0.21.4] - 2026-07-30
 ### Fixed
 - `/submit` now always bundles the consultant's emailed attachment into a
