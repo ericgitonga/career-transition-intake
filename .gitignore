@@ -1,10 +1,12 @@
 # Client folders — never commit client data
 Clients/
 
-# extras/ data and PDFs stay local; scripts are tracked
+# extras/ data and PDFs stay local; scripts and spike docs are tracked
 extras/
 !extras/pull_render_logs.py
 !extras/log_processed.py
+!extras/spike_payment_integration.md
+!extras/spike_platform_unification.md
 
 # Private report generators (contain client data or internal audit findings)
 generate_security_pdf.py
